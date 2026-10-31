@@ -228,3 +228,8 @@
   #svs_panel, #svs_fab.svs-pulse { animation: none; }
   .svs-ring .rf, .svs-switch i, .svs-switch i::after { transition: none; }
 }
+
+/* touch behaviour: taps register instantly, panning still works */
+#svs_panel, #svs_panel button, #svs_panel summary, #svs_panel label { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#svs_panel button, #svs_panel summary { cursor: pointer; }
+#svs_panel button > *, #svs_panel summary > i { pointer-events: none; }

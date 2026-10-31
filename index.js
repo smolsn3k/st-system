@@ -99,7 +99,7 @@ function t(k, v) {
 }
 
 /* ------------------------------------------------------------ debug store */
-const VERSION = '1.1.0';
+const VERSION = '1.1.1';
 const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
 function logErr(where, e) {
   const msg = (e && (e.stack || e.message)) || String(e);
@@ -122,7 +122,7 @@ function S() {
   for (const k in DEFAULTS) if (s[k] === undefined) s[k] = structuredClone(DEFAULTS[k]);
   return s;
 }
-const save = () => ctx().saveSettingsDebounced();
+const save = () => { try { ctx().saveSettingsDebounced(); } catch (e) { logErr('saveSettings', e); } };
 
 function CS() {
   const md = ctx().chatMetadata;
@@ -646,6 +646,10 @@ async function runDiag() {
     add(!!panel, 'Panel element', panel ? `display:${getComputedStyle(panel).display}` : 'missing');
     add($('#svs_drawer_body').length ? true : 'warn', 'Extensions drawer entry', $('#svs_drawer_body').length ? 'present' : 'missing');
     add($('#svs_wand').length ? true : 'warn', 'Wand menu entry', $('#svs_wand').length ? 'present' : 'missing');
+    const h = hitTest();
+    add(h.ok === true ? true : h.ok === null ? 'warn' : false, 'Hit-test (is the panel tappable?)', h.info + (dbg.hitFix ? ' · ' + dbg.hitFix : ''));
+    const ev = dbg.events, f = (k) => (ev[k] ? ev[k].n : 0);
+    add(f('panel_pointerdown') > 0 ? true : 'warn', 'Taps received by panel', `pointerdown ${f('panel_pointerdown')}, pointerup ${f('panel_pointerup')}, click ${f('panel_click')}, actions fired ${f('action')}`);
     add(dbg.buildSteps.every((x) => x.ok) ? true : false, 'UI build steps', dbg.buildSteps.map((x) => (x.ok ? '✓' : '✗') + x.name).join(' '));
   });
   await safe('Settings', async () => {
@@ -755,10 +759,50 @@ function renderDrawer() {
       <div id="svs_d_diag" class="menu_button menu_button_icon"><i class="fa-solid fa-stethoscope"></i><span>${t('diag')}</span></div>
     </div>`);
   $('#svs_wand_label').text(t('title'));
+  const g = (id) => document.getElementById(id);
+  if (g('svs_d_en')) g('svs_d_en').onchange = (e) => { S().enabled = e.target.checked; render(); save(); };
+  if (g('svs_d_lang')) g('svs_d_lang').onchange = (e) => { S().lang = e.target.value; renderDrawer(); render(); save(); };
+  if (g('svs_d_open')) g('svs_d_open').onclick = () => openPanel(true);
+  if (g('svs_d_diag')) g('svs_d_diag').onclick = () => { openPanel(true, 'diag'); runDiag(); };
 }
 
 /* ------------------------------------------------------------------- UI */
-function openPanel(v, tab) { const s = S(); s.open = v; if (tab) s.tab = tab; save(); render(); }
+function openPanel(v, tab) {
+  const s = S(); s.open = v; if (tab) s.tab = tab;
+  render(); save();
+  if (v) setTimeout(() => ensureReachable(true), 250);
+}
+/* Detect another element covering the panel (which would swallow taps) and try to lift the panel above it. */
+function hitTest() {
+  const panel = document.getElementById('svs_panel');
+  if (!panel || panel.classList.contains('svs-hidden')) return { ok: null, info: 'panel is closed' };
+  const probes = ['#svs_close', '.svs-tab', '.svs-btn'];
+  for (const sel of probes) {
+    const el = panel.querySelector(sel); if (!el) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width === 0) continue;
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const top = document.elementFromPoint(x, y);
+    if (!top) return { ok: false, info: `nothing at ${Math.round(x)},${Math.round(y)} (${sel} is off screen?)` };
+    if (!panel.contains(top)) {
+      const d = (n) => `${n.tagName.toLowerCase()}${n.id ? '#' + n.id : ''}${n.className && typeof n.className === 'string' ? '.' + n.className.trim().split(/\s+/).slice(0, 2).join('.') : ''}`;
+      return { ok: false, info: `${sel} is covered by <${d(top)}> (z-index ${getComputedStyle(top).zIndex})` };
+    }
+  }
+  return { ok: true, info: 'taps reach the panel' };
+}
+function ensureReachable(toast) {
+  let h = hitTest();
+  if (h.ok === false) {
+    const p = document.getElementById('svs_panel'), f = document.getElementById('svs_fab');
+    p.style.zIndex = '2147483000'; if (f) f.style.zIndex = '2147483000';
+    const h2 = hitTest();
+    dbg.hitFix = `${h.info} -> after raising z-index: ${h2.info}`;
+    if (toast && window.toastr) window.toastr.warning(dbg.hitFix, 'The System');
+    h = h2;
+  }
+  return h;
+}
 function resetFab() {
   S().fabPos = null; save();
   $('#svs_fab').css({ left: '', top: '', right: '', bottom: '' });
@@ -801,8 +845,8 @@ function buildUI() {
           <span id="svs_title"></span><span id="svs_pts"></span>
           <span class="svs-spacer"></span>
           <span class="svs-oprow" title="Opacity"><i class="fa-regular fa-eye"></i>${opSlider()}</span>
-          <button id="svs_diagbtn" class="svs-x" aria-label="Diagnostics"><i class="fa-solid fa-stethoscope"></i></button>
-          <button id="svs_close" class="svs-x" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+          <button id="svs_diagbtn" class="svs-x" data-act="diag-toggle" aria-label="Diagnostics"><i class="fa-solid fa-stethoscope"></i></button>
+          <button id="svs_close" class="svs-x" data-act="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="svs_tabs" class="svs-tabs"></div>
         <div id="svs_body" class="svs-body"></div>
@@ -822,51 +866,22 @@ function buildUI() {
   });
   step('wand', () => {
     $('#extensionsMenu').append(`<div id="svs_wand" class="list-group-item flex-container flexGap5"><div class="fa-solid fa-terminal extensionsMenuExtensionButton"></div><span id="svs_wand_label"></span></div>`);
+    const wand = document.getElementById('svs_wand');
+    if (wand) wand.onclick = () => openPanel(true);
   });
 
   step('handlers', () => {
-    const $d = $(document);
-    $d.on('click', '#svs_wand, #svs_d_open', () => openPanel(true));
-    $d.on('click', '#svs_d_diag', () => { openPanel(true, 'diag'); runDiag(); });
-    $d.on('click', '#svs_diagbtn', () => { openPanel(true, S().tab === 'diag' ? 'status' : 'diag'); });
-    $d.on('click', '#svs_close', () => openPanel(false));
-    $d.on('change', '#svs_d_en', (e) => { S().enabled = e.target.checked; save(); render(); });
-    $d.on('change', '#svs_d_lang', (e) => { S().lang = e.target.value; save(); renderDrawer(); render(); });
+    const panelEl = document.getElementById('svs_panel');
 
-    $d.on('input', '.svs-op', (e) => {
-      const v = clamp(Number(e.target.value) / 100, 0.25, 1);
-      S().opacity = v; $('.svs-op').val(Math.round(v * 100)); $('.svs-opval').text(Math.round(v * 100) + '%');
-      $('#svs_panel,#svs_fab').css('opacity', v); save();
-    });
-    $d.on('input change', '#svs_panel [data-field]', (e) => {
-      const w = currentWorld(); if (!w) return;
-      w[e.target.dataset.field] = e.target.value; save();
-    });
-    $d.on('change', '#svs_over', (e) => { overwrite = e.target.checked; });
-    $d.on('input', '#svs_ask', (e) => { askDraft = e.target.value; });
-    $d.on('keydown', '#svs_ask', (e) => { if (e.key === 'Enter') askSystem(); });
-    $d.on('change', '#svs_world', (e) => bindWorld(e.target.value));
-    $d.on('change', '#svs_file', async (e) => {
-      const f = e.target.files[0]; if (!f) return;
-      importWorlds(await f.text()); e.target.value = '';
-    });
-
-    const bind = (id, fn) => $d.on('change', id, (e) => { fn(e.target); save(); render(); });
-    bind('#svs_en', (el) => { S().enabled = el.checked; renderDrawer(); });
-    bind('#svs_lang', (el) => { S().lang = el.value; renderDrawer(); });
-    bind('#svs_outlang', (el) => { S().outLang = el.value; });
-    bind('#svs_profile', (el) => { S().profileId = el.value; });
-    bind('#svs_auto', (el) => { S().autoEval = el.checked; });
-    bind('#svs_ctxn', (el) => { S().ctxMessages = clamp(parseInt(el.value) || 6, 2, 30); });
-    bind('#svs_strict', (el) => { S().strict = el.value; });
-    bind('#svs_fabchk', (el) => { S().showFab = el.checked; });
-    bind('#svs_toast', (el) => { S().toasts = el.checked; });
-
-    $d.on('click', '#svs_panel [data-act]', async (e) => {
-      const el = e.currentTarget, act = el.dataset.act, cs = CS(), w = currentWorld(), st = S();
+    /* ---- actions (buttons) ---- */
+    async function runAct(el) {
+      hit('action');
+      const act = el.dataset.act, cs = CS(), w = currentWorld(), st = S();
       try {
         switch (act) {
-          case 'tab': st.tab = el.dataset.tab; save(); render(); break;
+          case 'close': openPanel(false); break;
+          case 'diag-toggle': openPanel(true, st.tab === 'diag' ? 'status' : 'diag'); break;
+          case 'tab': st.tab = el.dataset.tab; render(); save(); break;
           case 'eval': evaluate(true); break;
           case 'ask': askSystem(); break;
           case 'reset':
@@ -877,8 +892,8 @@ function buildUI() {
             break;
           case 'm-ai': aiMission(); break;
           case 'm-add': {
-            const title = $('#svs_mt').val().trim(); if (!title || !cs) break;
-            addMission(cs, { title, desc: '', reward: $('#svs_mr').val() || 50 }); saveChat(); render(); break;
+            const title = (document.getElementById('svs_mt')?.value || '').trim(); if (!title || !cs) break;
+            addMission(cs, { title, desc: '', reward: document.getElementById('svs_mr')?.value || 50 }); saveChat(); render(); break;
           }
           case 'm-done': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m) { completeMission(m); saveChat(); render(); } break; }
           case 'm-drop': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m) { m.status = 'failed'; saveChat(); render(); } break; }
@@ -901,7 +916,7 @@ function buildUI() {
             break;
           case 'w-exp': download(`system-world-${(w.name || 'world').replace(/[^\w-]+/g, '_')}.json`, { type: 'svs-world-profile', version: 1, worlds: [w] }); break;
           case 'w-expall': download('system-worlds.json', { type: 'svs-world-profile', version: 1, worlds: st.worlds }); break;
-          case 'w-imp': $('#svs_file').trigger('click'); break;
+          case 'w-imp': document.getElementById('svs_file')?.click(); break;
           case 'fill': fillWorld(); break;
           case 'refresh': render(); break;
           case 'profiles': render(); window.toastr?.info(t('profile_reloaded', { n: getProfiles().length })); break;
@@ -909,8 +924,64 @@ function buildUI() {
           case 'diag-run': runDiag(); break;
           case 'diag-copy': copyText(diagText()); break;
         }
-      } catch (err) { logErr('click:' + act, err); window.toastr?.error(t('err', { err: err.message || err })); }
+      } catch (err) { logErr('action:' + act, err); window.toastr?.error(t('err', { err: err.message || err })); }
+    }
+
+    /* ---- tap handling: pointerup is primary (works even if the browser swallows click), click is the fallback ---- */
+    let down = null, lastFire = 0;
+    const fire = (el) => { const now = Date.now(); if (now - lastFire < 400) return; lastFire = now; runAct(el); };
+    const target = (e) => (e.target && e.target.closest ? e.target.closest('[data-act]') : null);
+    panelEl.addEventListener('pointerdown', (e) => { hit('panel_pointerdown'); down = { x: e.clientX, y: e.clientY }; }, true);
+    panelEl.addEventListener('pointerup', (e) => {
+      hit('panel_pointerup');
+      if (!down) return;
+      const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y) > 10; down = null;
+      if (moved) return;
+      const el = target(e);
+      if (el && el.tagName !== 'INPUT' && !el.disabled) fire(el);
+    }, true);
+    panelEl.addEventListener('pointercancel', () => { down = null; }, true);
+    panelEl.addEventListener('click', (e) => {
+      hit('panel_click');
+      const el = target(e);
+      if (el && !el.disabled) fire(el);
+    }, true);
+
+    /* ---- inputs ---- */
+    const settingsMap = {
+      svs_en: (el) => { S().enabled = el.checked; renderDrawer(); },
+      svs_lang: (el) => { S().lang = el.value; renderDrawer(); },
+      svs_outlang: (el) => { S().outLang = el.value; },
+      svs_profile: (el) => { S().profileId = el.value; },
+      svs_auto: (el) => { S().autoEval = el.checked; },
+      svs_ctxn: (el) => { S().ctxMessages = clamp(parseInt(el.value) || 6, 2, 30); },
+      svs_strict: (el) => { S().strict = el.value; },
+      svs_fabchk: (el) => { S().showFab = el.checked; },
+      svs_toast: (el) => { S().toasts = el.checked; }
+    };
+    panelEl.addEventListener('input', (e) => {
+      const el = e.target;
+      if (el.classList.contains('svs-op')) {
+        const v = clamp(Number(el.value) / 100, 0.25, 1);
+        S().opacity = v;
+        document.querySelectorAll('.svs-op').forEach((x) => { x.value = Math.round(v * 100); });
+        document.querySelectorAll('.svs-opval').forEach((x) => { x.textContent = Math.round(v * 100) + '%'; });
+        document.getElementById('svs_panel').style.opacity = v;
+        document.getElementById('svs_fab').style.opacity = v; save();
+      } else if (el.dataset && el.dataset.field) {
+        const w = currentWorld(); if (w) { w[el.dataset.field] = el.value; save(); }
+      } else if (el.id === 'svs_ask') askDraft = el.value;
     });
+    panelEl.addEventListener('change', async (e) => {
+      const el = e.target;
+      if (el.dataset && el.dataset.field) { const w = currentWorld(); if (w) { w[el.dataset.field] = el.value; save(); } return; }
+      if (el.id === 'svs_over') { overwrite = el.checked; return; }
+      if (el.id === 'svs_world') { bindWorld(el.value); return; }
+      if (el.id === 'svs_file') { const f = el.files[0]; if (f) importWorlds(await f.text()); el.value = ''; return; }
+      if (settingsMap[el.id]) { settingsMap[el.id](el); save(); render(); }
+    });
+    panelEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'svs_ask') askSystem(); });
+
     window.addEventListener('resize', () => {
       const f = document.getElementById('svs_fab'); if (!f || !f.style.left) return;
       f.style.left = clamp(parseFloat(f.style.left) || 0, 0, innerWidth - f.offsetWidth) + 'px';
