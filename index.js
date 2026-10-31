@@ -99,7 +99,7 @@ function t(k, v) {
 }
 
 /* ------------------------------------------------------------ debug store */
-const VERSION = '1.1.1';
+const VERSION = '1.1.2';
 const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
 function logErr(where, e) {
   const msg = (e && (e.stack || e.message)) || String(e);
@@ -646,6 +646,8 @@ async function runDiag() {
     add(!!panel, 'Panel element', panel ? `display:${getComputedStyle(panel).display}` : 'missing');
     add($('#svs_drawer_body').length ? true : 'warn', 'Extensions drawer entry', $('#svs_drawer_body').length ? 'present' : 'missing');
     add($('#svs_wand').length ? true : 'warn', 'Wand menu entry', $('#svs_wand').length ? 'present' : 'missing');
+    const hb = getComputedStyle(document.body), hh = getComputedStyle(document.documentElement), pc = panel ? getComputedStyle(panel) : null;
+    add(true, 'Layout', `${geom()}; dpr ${devicePixelRatio}; popover ${typeof panel?.showPopover === 'function' ? 'supported' : 'unsupported'}; panel position ${pc?.position}, h ${pc?.height}; body transform ${hb.transform}, zoom ${hb.zoom}/${hh.zoom}; panel parent ${panel?.parentElement?.tagName}`);
     const h = hitTest();
     add(h.ok === true ? true : h.ok === null ? 'warn' : false, 'Hit-test (is the panel tappable?)', h.info + (dbg.hitFix ? ' · ' + dbg.hitFix : ''));
     const ev = dbg.events, f = (k) => (ev[k] ? ev[k].n : 0);
@@ -727,6 +729,34 @@ async function copyText(txt) {
 }
 window.__svsDiag = async () => { await runDiag(); console.log(diagText()); return diagText(); };
 
+/* ------------------------------------------------- placement helpers */
+/* Put an element in the browser top layer (above every page element, immune to odd ancestors). */
+function syncTop(el, visible) {
+  try {
+    if (!el || typeof el.showPopover !== 'function') return;
+    const open = el.matches(':popover-open');
+    if (visible && !open) el.showPopover();
+    else if (!visible && open) el.hidePopover();
+  } catch (e) { logErr('popover', e); }
+}
+/* Size and place the panel in explicit pixels from the REAL visible viewport. */
+function layoutPanel() {
+  const p = document.getElementById('svs_panel');
+  if (!p) return;
+  const vv = window.visualViewport;
+  const W = Math.round(vv?.width || innerWidth), H = Math.round(vv?.height || innerHeight);
+  const ox = vv?.offsetLeft || 0, oy = vv?.offsetTop || 0;
+  const mobile = W <= 640;
+  const w = mobile ? W : Math.min(420, W - 32);
+  const h = Math.round(Math.max(260, Math.min(mobile ? H * 0.78 : 690, H - (mobile ? 40 : 32))));
+  Object.assign(p.style, {
+    width: w + 'px', height: h + 'px', maxHeight: (H - 8) + 'px', maxWidth: W + 'px',
+    left: Math.round(ox + (mobile ? 0 : W - w - 16)) + 'px',
+    top: Math.round(oy + H - h - (mobile ? 0 : 16)) + 'px',
+    right: 'auto', bottom: 'auto'
+  });
+}
+
 /* ---------------------------------------------------------------- render */
 function render() {
   try {
@@ -743,8 +773,12 @@ function render() {
     body.innerHTML = (views[s.tab] || viewStatus)();
     body.scrollTop = top;
     $('#svs_diagbtn').toggleClass('on', s.tab === 'diag');
-    $('#svs_panel').toggleClass('svs-hidden', !s.open || (!s.enabled && s.tab !== 'diag'));
-    $('#svs_fab').toggleClass('svs-hidden', !s.showFab || !s.enabled).toggleClass('svs-nobind', !w);
+    const showPanel = s.open && (s.enabled || s.tab === 'diag'), showFab = s.showFab && s.enabled;
+    $('#svs_panel').toggleClass('svs-hidden', !showPanel);
+    $('#svs_fab').toggleClass('svs-hidden', !showFab).toggleClass('svs-nobind', !w);
+    syncTop(document.getElementById('svs_panel'), showPanel);
+    syncTop(document.getElementById('svs_fab'), showFab);
+    if (showPanel) layoutPanel();
     $('#svs_panel,#svs_fab').css('opacity', s.opacity);
   } catch (e) { logErr('render', e); }
 }
@@ -773,6 +807,10 @@ function openPanel(v, tab) {
   if (v) setTimeout(() => ensureReachable(true), 250);
 }
 /* Detect another element covering the panel (which would swallow taps) and try to lift the panel above it. */
+function geom() {
+  const p = document.getElementById('svs_panel'), r = p ? p.getBoundingClientRect() : null, vv = window.visualViewport;
+  return `panel rect ${r ? [r.left, r.top, r.width, r.height].map(Math.round).join(',') : 'n/a'}; inner ${innerWidth}x${innerHeight}; visual ${vv ? Math.round(vv.width) + 'x' + Math.round(vv.height) + '@' + vv.scale : 'n/a'}`;
+}
 function hitTest() {
   const panel = document.getElementById('svs_panel');
   if (!panel || panel.classList.contains('svs-hidden')) return { ok: null, info: 'panel is closed' };
@@ -783,7 +821,7 @@ function hitTest() {
     if (r.width === 0) continue;
     const x = r.left + r.width / 2, y = r.top + r.height / 2;
     const top = document.elementFromPoint(x, y);
-    if (!top) return { ok: false, info: `nothing at ${Math.round(x)},${Math.round(y)} (${sel} is off screen?)` };
+    if (!top) return { ok: false, info: `nothing at ${Math.round(x)},${Math.round(y)} (${sel} is off screen?) · ${geom()}` };
     if (!panel.contains(top)) {
       const d = (n) => `${n.tagName.toLowerCase()}${n.id ? '#' + n.id : ''}${n.className && typeof n.className === 'string' ? '.' + n.className.trim().split(/\s+/).slice(0, 2).join('.') : ''}`;
       return { ok: false, info: `${sel} is covered by <${d(top)}> (z-index ${getComputedStyle(top).zIndex})` };
@@ -792,6 +830,7 @@ function hitTest() {
   return { ok: true, info: 'taps reach the panel' };
 }
 function ensureReachable(toast) {
+  layoutPanel();
   let h = hitTest();
   if (h.ok === false) {
     const p = document.getElementById('svs_panel'), f = document.getElementById('svs_fab');
@@ -839,8 +878,8 @@ function buildUI() {
 
   step('panel', () => {
     $('body').append(`
-      <div id="svs_fab" class="svs-hidden" title="System"><span>S</span></div>
-      <div id="svs_panel" class="svs-hidden" role="dialog" aria-label="System">
+      <div id="svs_fab" class="svs-hidden" popover="manual" title="System"><span>S</span></div>
+      <div id="svs_panel" class="svs-hidden" popover="manual" role="dialog" aria-label="System">
         <div class="svs-head">
           <span id="svs_title"></span><span id="svs_pts"></span>
           <span class="svs-spacer"></span>
@@ -982,6 +1021,10 @@ function buildUI() {
     });
     panelEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'svs_ask') askSystem(); });
 
+    const relayout = () => { if (!document.getElementById('svs_panel').classList.contains('svs-hidden')) layoutPanel(); };
+    window.addEventListener('resize', relayout);
+    window.addEventListener('orientationchange', () => setTimeout(relayout, 200));
+    if (window.visualViewport) { window.visualViewport.addEventListener('resize', relayout); window.visualViewport.addEventListener('scroll', relayout); }
     window.addEventListener('resize', () => {
       const f = document.getElementById('svs_fab'); if (!f || !f.style.left) return;
       f.style.left = clamp(parseFloat(f.style.left) || 0, 0, innerWidth - f.offsetWidth) + 'px';
