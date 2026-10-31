@@ -42,7 +42,12 @@ en: {
   zero: '{pn} reached 0. Penalty protocol engaged. Return to the setting immediately.',
   err: 'System error: {err}', need_msg: 'There is no player message to evaluate yet.',
   asked: 'You', default_voice: 'cold, mechanical, slightly sarcastic game-system narrator',
-  def_pn: 'B-Points', new_world: 'New world'
+  def_pn: 'B-Points', new_world: 'New world',
+  diag: 'Diagnostics', diag_run: 'Run diagnostics', diag_copy: 'Copy report', diag_copied: 'Report copied.', diag_running: 'Running checks…',
+  diag_hint: 'Run the checks, then copy the report and send it to whoever helps you debug.', diag_reset_fab: 'Reset button position',
+  sec_source: 'Sources', sec_profile: 'Profile', sec_shop: 'Shop & missions', st_missions: 'Missions', st_items: 'Items', st_last: 'Last verdict',
+  v_in_character: 'In character', v_ooc: 'OOC', v_none: '—', parse_fallback: 'The model did not return valid JSON; showing its raw reply.',
+  no_world_dot: 'No world bound to this chat'
 },
 ru: {
   title: 'Система', tab_status: 'Статус', tab_missions: 'Задания', tab_shop: 'Магазин', tab_world: 'Мир', tab_settings: 'Настройки',
@@ -78,7 +83,12 @@ ru: {
   zero: '{pn} упали до 0. Запущен протокол наказания. Немедленно вернитесь к сеттингу.',
   err: 'Ошибка Системы: {err}', need_msg: 'Пока нет сообщения игрока для оценки.',
   asked: 'Вы', default_voice: 'холодный, механический, слегка саркастичный голос игровой системы',
-  def_pn: 'B-очки', new_world: 'Новый мир'
+  def_pn: 'B-очки', new_world: 'Новый мир',
+  diag: 'Диагностика', diag_run: 'Запустить диагностику', diag_copy: 'Копировать отчёт', diag_copied: 'Отчёт скопирован.', diag_running: 'Выполняю проверки…',
+  diag_hint: 'Запустите проверки, скопируйте отчёт и отправьте тому, кто помогает с отладкой.', diag_reset_fab: 'Сбросить позицию кнопки',
+  sec_source: 'Источники', sec_profile: 'Профиль', sec_shop: 'Магазин и задания', st_missions: 'Задания', st_items: 'Предметы', st_last: 'Последний вердикт',
+  v_in_character: 'В образе', v_ooc: 'OOC', v_none: '—', parse_fallback: 'Модель не вернула корректный JSON; показан её сырой ответ.',
+  no_world_dot: 'К чату не привязан мир'
 }
 };
 function t(k, v) {
@@ -87,6 +97,17 @@ function t(k, v) {
   if (v) for (const x in v) s = s.replaceAll('{' + x + '}', v[x]);
   return s;
 }
+
+/* ------------------------------------------------------------ debug store */
+const VERSION = '1.1.0';
+const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
+function logErr(where, e) {
+  const msg = (e && (e.stack || e.message)) || String(e);
+  dbg.errors.push({ time: Date.now(), where, msg: String(msg).slice(0, 600) });
+  if (dbg.errors.length > 30) dbg.errors.shift();
+  console.error('[System]', where, e);
+}
+const hit = (name) => { dbg.events[name] = { n: (dbg.events[name]?.n || 0) + 1, last: Date.now() }; };
 
 /* -------------------------------------------------------------- settings */
 const DEFAULTS = {
@@ -157,13 +178,21 @@ function getProfiles() {
   return Array.isArray(p) ? p : [];
 }
 async function llm(system, user, maxTokens = 900) {
+  const out = await llmInner(system, user, maxTokens);
+  dbg.lastRaw = out; dbg.lastRawAt = Date.now();
+  return out;
+}
+async function llmInner(system, user, maxTokens) {
   const c = ctx(), s = S();
   if (s.profileId && c.ConnectionManagerRequestService && getProfiles().some((p) => p.id === s.profileId)) {
     const r = await c.ConnectionManagerRequestService.sendRequest(
       s.profileId, [{ role: 'system', content: system }, { role: 'user', content: user }], maxTokens);
     return cleanText(r?.content);
   }
-  const r = await c.generateRaw({ prompt: user, systemPrompt: system, responseLength: maxTokens });
+  let r = '';
+  try { r = await c.generateRaw({ prompt: user, systemPrompt: system, responseLength: maxTokens }); }
+  catch (e) { logErr('generateRaw(object form)', e); }
+  if (!r) r = await c.generateRaw(user, null, false, false, system, maxTokens); // legacy signature
   return cleanText(r);
 }
 
@@ -305,10 +334,14 @@ function completeMission(m, silent) {
 
 async function evaluate(manual) {
   const s = S(), w = currentWorld(), cs = CS();
-  if (!s.enabled || busy || !w || !cs) return;
+  if (!s.enabled) { dbg.lastSkip = 'extension disabled'; return; }
+  if (busy) { dbg.lastSkip = 'already busy'; return; }
+  if (!cs) { dbg.lastSkip = 'no chat metadata (no chat open?)'; return; }
+  if (!w) { dbg.lastSkip = 'no world profile bound to this chat'; return; }
   const idx = lastUserIndex();
-  if (idx < 0) { if (manual) window.toastr?.warning(t('need_msg')); return; }
-  if (!manual && cs.lastUserIdx === idx) return;
+  if (idx < 0) { dbg.lastSkip = 'no user message in chat'; if (manual) window.toastr?.warning(t('need_msg')); return; }
+  if (!manual && cs.lastUserIdx === idx) { dbg.lastSkip = 'this user message was already evaluated'; return; }
+  dbg.lastSkip = '';
   busy = true; render();
   try {
     const missions = cs.missions.filter((m) => m.status === 'active')
@@ -325,12 +358,15 @@ Evaluate ONLY the player's latest message (>>>), using the character's reply as 
 delta must be 0 for neutral. Offer new_mission only if there are no active missions or the story clearly opens an opportunity.`;
     const raw = await llm(systemPrompt(w), user, 700);
     const r = extractJSON(raw);
-    if (!r) throw new Error('bad JSON from model');
-    applyResult(w, cs, r);
+    if (!r) {
+      if (!raw) throw new Error('empty reply from the model');
+      window.toastr?.warning(t('parse_fallback'));
+      applyResult(w, cs, { verdict: 'neutral', delta: 0, message: raw.slice(0, 400) });
+    } else applyResult(w, cs, r);
     cs.lastUserIdx = idx;
     saveChat();
   } catch (e) {
-    console.error('[System]', e);
+    logErr('evaluate', e);
     window.toastr?.error(t('err', { err: e.message || e }));
   } finally { busy = false; render(); }
 }
@@ -349,7 +385,7 @@ Answer in your voice in at most 3 sentences. You may hint at how the bound chara
     const a = await llm(systemPrompt(w), user, 400);
     pushLog(cs, { kind: 'ask', q, text: a });
     saveChat();
-  } catch (e) { window.toastr?.error(t('err', { err: e.message || e })); }
+  } catch (e) { logErr('ask', e); window.toastr?.error(t('err', { err: e.message || e })); }
   finally { busy = false; render(); }
 }
 
@@ -363,7 +399,7 @@ async function aiMission() {
     const r = extractJSON(await llm(systemPrompt(w), user, 400));
     if (!r || !r.title) throw new Error('bad JSON from model');
     addMission(cs, r); saveChat();
-  } catch (e) { window.toastr?.error(t('err', { err: e.message || e })); }
+  } catch (e) { logErr('aiMission', e); window.toastr?.error(t('err', { err: e.message || e })); }
   finally { busy = false; render(); }
 }
 
@@ -396,7 +432,7 @@ Give 4-6 shop items and 3 starter missions.`;
     save();
     if (r.known === false) window.toastr?.warning(t('fill_unknown')); else window.toastr?.success(t('fill_done'));
   } catch (e) {
-    console.error('[System]', e);
+    logErr('fillWorld', e);
     window.toastr?.error(t('fill_fail', { err: e.message || e }));
   } finally { busy = false; render(); }
 }
@@ -428,48 +464,85 @@ async function confirmBox(msg) {
 }
 
 /* ------------------------------------------------------------------ views */
+const openSecs = { src: true, prof: true, shop: false };
+const ICON = { in_character: 'fa-circle-check', ooc: 'fa-triangle-exclamation', reward: 'fa-gift', info: 'fa-circle-info', ask: 'fa-comment-dots', neutral: 'fa-minus' };
+const TAB_ICON = { status: 'fa-gauge-high', missions: 'fa-list-check', shop: 'fa-store', world: 'fa-globe', settings: 'fa-sliders', diag: 'fa-stethoscope' };
+const hhmm = (ts) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
 function opSlider() {
   return `<input type="range" class="svs-op" min="25" max="100" value="${Math.round(S().opacity * 100)}" aria-label="${t('s_opacity')}">`;
 }
+function ring(points) {
+  const C = 2 * Math.PI * 52, ratio = clamp(points / Math.max(200, points), 0, 1);
+  const tone = points < 20 ? 'low' : points < 60 ? 'mid' : 'hi';
+  return `<div class="svs-ring ${tone}"><svg viewBox="0 0 120 120"><circle class="rb" cx="60" cy="60" r="52"/><circle class="rf" cx="60" cy="60" r="52" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - ratio)).toFixed(1)}" transform="rotate(-90 60 60)"/></svg><div class="svs-ringnum">${points}</div></div>`;
+}
+const noWorld = () => `<div class="svs-empty big"><i class="fa-solid fa-link-slash"></i><p>${t('no_world')}</p>
+  <button class="svs-btn svs-primary" data-act="tab" data-tab="world"><i class="fa-solid fa-globe"></i> ${t('tab_world')}</button></div>`;
+
 function viewStatus() {
   const w = currentWorld(), cs = CS();
-  if (!w || !cs) return `<div class="svs-empty">${t('no_world')}</div><button class="svs-btn" data-act="tab" data-tab="world">${t('tab_world')}</button>`;
+  if (!w || !cs) return noWorld();
   const log = [...cs.log].reverse().map((e) => {
+    const k = ICON[e.kind] ? e.kind : 'info';
     const d = e.delta ? `<span class="svs-delta ${e.delta > 0 ? 'pos' : 'neg'}">${e.delta > 0 ? '+' : ''}${e.delta}</span>` : '';
     const q = e.kind === 'ask' ? `<div class="svs-q">${t('asked')}: ${esc(e.q)}</div>` : '';
-    return `<div class="svs-note svs-k-${e.kind}">${q}<span class="svs-msg">【 ${esc(e.text)} 】</span>${d}</div>`;
-  }).join('') || `<div class="svs-empty">${t('log_empty')}</div>`;
+    return `<div class="svs-note k-${k}"><div class="svs-ni"><i class="fa-solid ${ICON[k]}"></i></div>
+      <div class="svs-nb">${q}<div class="svs-msg">【 ${esc(e.text)} 】</div><div class="svs-time">${hhmm(e.time)}</div></div>${d}</div>`;
+  }).join('') || `<div class="svs-empty"><p>${t('log_empty')}</p></div>`;
+  const last = [...cs.log].reverse().find((e) => e.kind === 'in_character' || e.kind === 'ooc');
+  const lastTxt = last ? (last.kind === 'ooc' ? t('v_ooc') : t('v_in_character')) : t('v_none');
+  const nAct = cs.missions.filter((m) => m.status === 'active').length;
   return `
-  <div class="svs-bound"><span>${t('bound_to')}</span><b>${esc(w.character || w.name)}</b><small>${esc(w.fandom)}</small></div>
-  <div class="svs-score"><span class="svs-num">${cs.points}</span><span class="svs-unit">${esc(w.pointName)}</span></div>
-  <button class="svs-btn svs-primary" data-act="eval" ${busy ? 'disabled' : ''}>${busy ? t('thinking') : t('evaluate')}</button>
-  <div class="svs-ask"><input id="svs_ask" type="text" placeholder="${t('ask_ph')}" value="${esc(askDraft)}"><button class="svs-btn" data-act="ask" ${busy ? 'disabled' : ''}>${t('ask_btn')}</button></div>
+  <div class="svs-hero">
+    <div class="svs-badge">${esc((w.character || w.name || '?').trim().charAt(0).toUpperCase())}</div>
+    <div class="svs-herotxt"><small>${t('bound_to')}</small><b>${esc(w.character || w.name)}</b><small>${esc(w.fandom)}</small></div>
+  </div>
+  <div class="svs-dash">
+    ${ring(cs.points)}
+    <div class="svs-stats">
+      <div class="svs-unit">${esc(w.pointName)}</div>
+      <div class="svs-stat"><span>${t('st_missions')}</span><b>${nAct}</b></div>
+      <div class="svs-stat"><span>${t('st_items')}</span><b>${cs.inventory.length}</b></div>
+      <div class="svs-stat"><span>${t('st_last')}</span><b class="${last ? (last.kind === 'ooc' ? 'neg' : 'pos') : ''}">${lastTxt}</b></div>
+    </div>
+  </div>
+  <button class="svs-btn svs-primary wide" data-act="eval" ${busy ? 'disabled' : ''}><i class="fa-solid ${busy ? 'fa-circle-notch fa-spin' : 'fa-bolt'}"></i> ${busy ? t('thinking') : t('evaluate')}</button>
+  <div class="svs-ask"><input id="svs_ask" type="text" placeholder="${t('ask_ph')}" value="${esc(askDraft)}"><button class="svs-btn icon" data-act="ask" ${busy ? 'disabled' : ''} aria-label="${t('ask_btn')}"><i class="fa-solid fa-paper-plane"></i></button></div>
   <div class="svs-log">${log}</div>
-  <button class="svs-btn svs-danger" data-act="reset">${t('reset_state')}</button>`;
+  <button class="svs-btn ghost svs-danger wide" data-act="reset"><i class="fa-solid fa-rotate-left"></i> ${t('reset_state')}</button>`;
 }
 function viewMissions() {
   const w = currentWorld(), cs = CS();
-  if (!w || !cs) return `<div class="svs-empty">${t('no_world')}</div>`;
+  if (!w || !cs) return noWorld();
   const act = cs.missions.filter((m) => m.status === 'active');
   const hist = cs.missions.filter((m) => m.status !== 'active').reverse();
-  const card = (m, a) => `<div class="svs-card"><b>${esc(m.title)}</b><p>${esc(m.desc)}</p>
-    <div class="svs-cardrow"><span class="svs-gold">${t('reward')}: ${m.reward} ${esc(w.pointName)}</span>
-    ${a ? `<span><button class="svs-btn sm" data-act="m-done" data-id="${m.id}">${t('complete')}</button> <button class="svs-btn sm svs-danger" data-act="m-drop" data-id="${m.id}">${t('abandon')}</button></span>` : `<span class="svs-st-${m.status}">${m.status === 'done' ? '✔' : '✘'}</span>`}</div></div>`;
+  const card = (m, a) => `<div class="svs-card ${a ? '' : 'dim'}"><div class="svs-cardhead"><b>${esc(m.title)}</b>
+      <span class="svs-chip gold"><i class="fa-solid fa-coins"></i> ${m.reward}</span></div>
+      ${m.desc ? `<p>${esc(m.desc)}</p>` : ''}
+      <div class="svs-cardrow">${a ? `<button class="svs-btn sm" data-act="m-done" data-id="${m.id}"><i class="fa-solid fa-check"></i> ${t('complete')}</button>
+      <button class="svs-btn sm ghost svs-danger" data-act="m-drop" data-id="${m.id}">${t('abandon')}</button>`
+        : `<span class="svs-st-${m.status}"><i class="fa-solid ${m.status === 'done' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i></span>`}</div></div>`;
   return `
-  <h4>${t('m_active')}</h4>${act.map((m) => card(m, true)).join('') || `<div class="svs-empty">${t('no_missions')}</div>`}
-  <button class="svs-btn svs-primary" data-act="m-ai" ${busy ? 'disabled' : ''}>${busy ? t('thinking') : t('m_ai')}</button>
-  <div class="svs-ask"><input id="svs_mt" type="text" placeholder="${t('m_title_ph')}"><input id="svs_mr" type="number" class="svs-narrow" placeholder="${t('m_reward_ph')}"><button class="svs-btn" data-act="m-add">${t('m_add')}</button></div>
-  ${hist.length ? `<h4>${t('m_history')}</h4>${hist.map((m) => card(m, false)).join('')}` : ''}`;
+  <div class="svs-h">${t('m_active')} <span class="svs-count">${act.length}</span></div>
+  ${act.map((m) => card(m, true)).join('') || `<div class="svs-empty"><i class="fa-regular fa-flag"></i><p>${t('no_missions')}</p></div>`}
+  <button class="svs-btn svs-primary wide" data-act="m-ai" ${busy ? 'disabled' : ''}><i class="fa-solid ${busy ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'}"></i> ${busy ? t('thinking') : t('m_ai')}</button>
+  <div class="svs-ask"><input id="svs_mt" type="text" placeholder="${t('m_title_ph')}"><input id="svs_mr" type="number" class="svs-narrow" placeholder="${t('m_reward_ph')}"><button class="svs-btn icon" data-act="m-add" aria-label="${t('m_add')}"><i class="fa-solid fa-plus"></i></button></div>
+  ${hist.length ? `<div class="svs-h">${t('m_history')} <span class="svs-count">${hist.length}</span></div>${hist.map((m) => card(m, false)).join('')}` : ''}`;
 }
 function viewShop() {
   const w = currentWorld(), cs = CS();
-  if (!w || !cs) return `<div class="svs-empty">${t('no_world')}</div>`;
+  if (!w || !cs) return noWorld();
   const items = parseShop(w.shopText);
-  const shop = items.map((it, i) => `<div class="svs-card"><b>${esc(it.name)}</b><p>${esc(it.desc)}</p>
-    <div class="svs-cardrow"><span class="svs-gold">${it.cost} ${esc(w.pointName)}</span><button class="svs-btn sm" data-act="buy" data-i="${i}">${t('buy')}</button></div></div>`).join('') || `<div class="svs-empty">${t('shop_empty')}</div>`;
-  const inv = cs.inventory.map((it, i) => `<div class="svs-card"><b>${esc(it.name)}</b><p>${esc(it.desc)}</p>
-    <div class="svs-cardrow"><span></span><button class="svs-btn sm" data-act="use" data-i="${i}">${t('use')}</button></div></div>`).join('') || `<div class="svs-empty">${t('inv_empty')}</div>`;
-  return `<div class="svs-balance">${cs.points} ${esc(w.pointName)}</div>${shop}<h4>${t('inventory')}</h4>${inv}`;
+  const shop = items.map((it, i) => `<div class="svs-card"><div class="svs-cardhead"><b>${esc(it.name)}</b>
+    <span class="svs-chip gold"><i class="fa-solid fa-coins"></i> ${it.cost}</span></div>${it.desc ? `<p>${esc(it.desc)}</p>` : ''}
+    <div class="svs-cardrow"><button class="svs-btn sm" data-act="buy" data-i="${i}" ${cs.points < it.cost ? 'disabled' : ''}><i class="fa-solid fa-cart-shopping"></i> ${t('buy')}</button></div></div>`).join('')
+    || `<div class="svs-empty"><i class="fa-solid fa-store-slash"></i><p>${t('shop_empty')}</p></div>`;
+  const inv = cs.inventory.map((it, i) => `<div class="svs-card"><div class="svs-cardhead"><b>${esc(it.name)}</b></div>${it.desc ? `<p>${esc(it.desc)}</p>` : ''}
+    <div class="svs-cardrow"><button class="svs-btn sm ghost" data-act="use" data-i="${i}">${t('use')}</button></div></div>`).join('')
+    || `<div class="svs-empty"><i class="fa-solid fa-box-open"></i><p>${t('inv_empty')}</p></div>`;
+  return `<div class="svs-wallet"><i class="fa-solid fa-coins"></i><b>${cs.points}</b><span>${esc(w.pointName)}</span></div>${shop}
+    <div class="svs-h">${t('inventory')} <span class="svs-count">${cs.inventory.length}</span></div>${inv}`;
 }
 function viewWorld() {
   const s = S(), cs = CS(), w = currentWorld();
@@ -477,31 +550,33 @@ function viewWorld() {
   const lore = `<option value="">${t('lore_none')}</option>` + getLorebookNames().map((n) => `<option ${w && w.lorebook === n ? 'selected' : ''}>${esc(n)}</option>`).join('');
   const inp = (f, label, ph = '') => `<label>${label}<input type="text" data-field="${f}" value="${esc(w[f])}" placeholder="${ph}"></label>`;
   const ta = (f, label, rows = 3) => `<label>${label}<textarea data-field="${f}" rows="${rows}">${esc(w[f])}</textarea></label>`;
+  const sec = (k, icon, title, body) => `<details class="svs-sec" data-sec="${k}" ${openSecs[k] ? 'open' : ''}><summary><i class="fa-solid ${icon}"></i> ${title}</summary><div class="svs-secbody">${body}</div></details>`;
   const editor = w ? `
-    ${inp('name', t('f_name'))}
-    ${inp('fandom', t('f_fandom'), 'Scum Villain, Naruto, Harry Potter…')}
-    ${inp('character', t('f_character'))}
-    ${ta('wikiUrls', t('f_wiki'), 2)}
-    <label>${t('f_lore')}<span class="svs-inline"><select data-field="lorebook">${lore}</select><button class="svs-btn sm" data-act="refresh" title="${t('refresh')}">⟳</button></span></label>
-    ${ta('notes', t('f_notes'), 3)}
-    <label class="svs-check"><input type="checkbox" id="svs_over" ${overwrite ? 'checked' : ''}> ${t('overwrite')}</label>
-    <button class="svs-btn svs-primary" data-act="fill" ${busy ? 'disabled' : ''}>${busy ? t('filling') : t('fill_ai')}</button>
-    ${ta('world', t('f_world'), 4)}
-    ${ta('persona', t('f_persona'), 4)}
-    ${ta('plot', t('f_plot'), 4)}
-    ${inp('systemVoice', t('f_voice'))}
-    ${inp('pointName', t('f_points'))}
-    ${ta('shopText', t('f_shop'), 4)}
-    ${ta('missionsText', t('f_missions'), 4)}` : '';
+    ${sec('src', 'fa-book-open', t('sec_source'), `
+      ${inp('fandom', t('f_fandom'), 'Scum Villain, Naruto, Harry Potter…')}
+      ${inp('character', t('f_character'))}
+      ${ta('wikiUrls', t('f_wiki'), 2)}
+      <label>${t('f_lore')}<span class="svs-inline"><select data-field="lorebook">${lore}</select><button class="svs-btn icon sm" data-act="refresh" title="${t('refresh')}"><i class="fa-solid fa-rotate"></i></button></span></label>
+      ${ta('notes', t('f_notes'), 3)}
+      <label class="svs-switch"><input type="checkbox" id="svs_over" ${overwrite ? 'checked' : ''}><i></i><span>${t('overwrite')}</span></label>
+      <button class="svs-btn svs-primary wide" data-act="fill" ${busy ? 'disabled' : ''}><i class="fa-solid ${busy ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'}"></i> ${busy ? t('filling') : t('fill_ai')}</button>`)}
+    ${sec('prof', 'fa-id-card', t('sec_profile'), `
+      ${inp('name', t('f_name'))}
+      ${ta('world', t('f_world'), 4)}
+      ${ta('persona', t('f_persona'), 4)}
+      ${ta('plot', t('f_plot'), 4)}
+      ${inp('systemVoice', t('f_voice'))}
+      ${inp('pointName', t('f_points'))}`)}
+    ${sec('shop', 'fa-store', t('sec_shop'), `${ta('shopText', t('f_shop'), 4)}${ta('missionsText', t('f_missions'), 4)}`)}` : '';
   return `
   <label>${t('active_world')}<select id="svs_world">${opts}</select></label>
   <div class="svs-btnrow">
-    <button class="svs-btn sm" data-act="w-new">${t('new')}</button>
-    <button class="svs-btn sm" data-act="w-dup" ${w ? '' : 'disabled'}>${t('dup')}</button>
-    <button class="svs-btn sm svs-danger" data-act="w-del" ${w ? '' : 'disabled'}>${t('del')}</button>
-    <button class="svs-btn sm" data-act="w-exp" ${w ? '' : 'disabled'}>${t('export')}</button>
-    <button class="svs-btn sm" data-act="w-expall" ${s.worlds.length ? '' : 'disabled'}>${t('export_all')}</button>
-    <button class="svs-btn sm" data-act="w-imp">${t('import')}</button>
+    <button class="svs-btn sm" data-act="w-new"><i class="fa-solid fa-plus"></i> ${t('new')}</button>
+    <button class="svs-btn sm" data-act="w-dup" ${w ? '' : 'disabled'}><i class="fa-regular fa-copy"></i> ${t('dup')}</button>
+    <button class="svs-btn sm" data-act="w-exp" ${w ? '' : 'disabled'}><i class="fa-solid fa-file-export"></i> ${t('export')}</button>
+    <button class="svs-btn sm" data-act="w-expall" ${s.worlds.length ? '' : 'disabled'}><i class="fa-solid fa-boxes-packing"></i> ${t('export_all')}</button>
+    <button class="svs-btn sm" data-act="w-imp"><i class="fa-solid fa-file-import"></i> ${t('import')}</button>
+    <button class="svs-btn sm ghost svs-danger" data-act="w-del" ${w ? '' : 'disabled'}><i class="fa-regular fa-trash-can"></i> ${t('del')}</button>
   </div>
   <input type="file" id="svs_file" accept=".json,application/json" hidden>
   ${editor}`;
@@ -510,39 +585,164 @@ function viewSettings() {
   const s = S(), profiles = getProfiles();
   const popt = `<option value="">${t('profile_current')}</option>` + profiles.map((p) => `<option value="${esc(p.id)}" ${p.id === s.profileId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
   const sel = (id, val, items) => `<select id="${id}">${items.map(([v, l]) => `<option value="${v}" ${v === val ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
-  const chk = (id, v, l) => `<label class="svs-check"><input type="checkbox" id="${id}" ${v ? 'checked' : ''}> ${l}</label>`;
+  const sw = (id, v, l) => `<label class="svs-switch"><input type="checkbox" id="${id}" ${v ? 'checked' : ''}><i></i><span>${l}</span></label>`;
   return `
-  ${chk('svs_en', s.enabled, t('s_enabled'))}
-  <label>${t('s_lang')}${sel('svs_lang', s.lang, [['en', 'English'], ['ru', 'Русский']])}</label>
-  <label>${t('s_outlang')}${sel('svs_outlang', s.outLang, [['ui', t('out_ui')], ['en', 'English'], ['ru', 'Русский'], ['chat', t('out_chat')]])}</label>
-  <label>${t('s_opacity')}${opSlider()}</label>
-  <label>${t('s_profile')}<span class="svs-inline"><select id="svs_profile">${popt}</select><button class="svs-btn sm" data-act="profiles" title="${t('profile_reload')}">⟳</button></span></label>
-  ${profiles.length ? '' : `<small class="svs-hint">${t('profile_none')}</small>`}
-  <button class="svs-btn" data-act="profiles">${t('profile_reload')}</button>
-  ${chk('svs_auto', s.autoEval, t('s_auto'))}
-  <label>${t('s_ctx')}<input type="number" id="svs_ctxn" min="2" max="30" value="${s.ctxMessages}"></label>
-  <label>${t('s_strict')}${sel('svs_strict', s.strict, [['gentle', t('gentle')], ['normal', t('normal')], ['harsh', t('harsh')]])}</label>
-  ${chk('svs_fabchk', s.showFab, t('s_fab'))}
-  ${chk('svs_toast', s.toasts, t('s_toast'))}`;
+  ${sw('svs_en', s.enabled, t('s_enabled'))}
+  <div class="svs-group">
+    <label>${t('s_lang')}${sel('svs_lang', s.lang, [['en', 'English'], ['ru', 'Русский']])}</label>
+    <label>${t('s_outlang')}${sel('svs_outlang', s.outLang, [['ui', t('out_ui')], ['en', 'English'], ['ru', 'Русский'], ['chat', t('out_chat')]])}</label>
+    <label>${t('s_opacity')} <b class="svs-opval">${Math.round(s.opacity * 100)}%</b>${opSlider()}</label>
+  </div>
+  <div class="svs-group">
+    <label>${t('s_profile')}<span class="svs-inline"><select id="svs_profile">${popt}</select><button class="svs-btn icon sm" data-act="profiles" title="${t('profile_reload')}"><i class="fa-solid fa-rotate"></i></button></span></label>
+    <button class="svs-btn wide" data-act="profiles"><i class="fa-solid fa-rotate"></i> ${t('profile_reload')}</button>
+    ${profiles.length ? '' : `<small class="svs-hint">${t('profile_none')}</small>`}
+  </div>
+  <div class="svs-group">
+    ${sw('svs_auto', s.autoEval, t('s_auto'))}
+    <label>${t('s_ctx')}<input type="number" id="svs_ctxn" min="2" max="30" value="${s.ctxMessages}"></label>
+    <label>${t('s_strict')}${sel('svs_strict', s.strict, [['gentle', t('gentle')], ['normal', t('normal')], ['harsh', t('harsh')]])}</label>
+    ${sw('svs_fabchk', s.showFab, t('s_fab'))}
+    ${sw('svs_toast', s.toasts, t('s_toast'))}
+  </div>
+  <button class="svs-btn wide" data-act="tab" data-tab="diag"><i class="fa-solid fa-stethoscope"></i> ${t('diag')}</button>
+  <button class="svs-btn ghost wide" data-act="reset-fab"><i class="fa-solid fa-location-crosshairs"></i> ${t('diag_reset_fab')}</button>`;
 }
+
+/* ------------------------------------------------------------ diagnostics */
+const diag = { running: false, items: [], at: 0 };
+const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(what + ' timed out after ' + ms / 1000 + 's')), ms))]);
+
+async function runDiag() {
+  if (diag.running) return;
+  diag.running = true; diag.items = []; render();
+  const items = [];
+  const add = (ok, label, detail = '') => items.push({ ok, label, detail });
+  const safe = async (label, fn) => { try { await fn(); } catch (e) { add(false, label, String(e?.message || e)); logErr('diag:' + label, e); } };
+
+  await safe('Environment', async () => {
+    add(true, 'Extension', `The System v${VERSION} is loaded`);
+    add(typeof SillyTavern !== 'undefined' && !!SillyTavern.getContext, 'SillyTavern.getContext()', typeof SillyTavern);
+    add(typeof jQuery !== 'undefined', 'jQuery', typeof jQuery);
+    add(window.toastr ? true : 'warn', 'toastr (pop-ups)', window.toastr ? 'available' : 'missing');
+    add(true, 'Browser', navigator.userAgent.slice(0, 110) + ` · ${innerWidth}×${innerHeight}`);
+  });
+  await safe('Context', async () => {
+    const c = ctx();
+    const need = ['eventSource', 'event_types', 'extensionSettings', 'saveSettingsDebounced', 'generateRaw', 'chat', 'name1'];
+    const miss = need.filter((k) => c[k] === undefined);
+    add(miss.length === 0, 'Context API', miss.length ? 'missing: ' + miss.join(', ') : 'all required members present');
+    add(!!(c.saveMetadataDebounced || c.saveMetadata), 'saveMetadata', c.saveMetadataDebounced ? 'debounced' : c.saveMetadata ? 'plain' : 'missing');
+    add(!!c.event_types?.CHARACTER_MESSAGE_RENDERED, 'Event CHARACTER_MESSAGE_RENDERED', String(c.event_types?.CHARACTER_MESSAGE_RENDERED));
+  });
+  await safe('UI', async () => {
+    const fab = document.getElementById('svs_fab'), panel = document.getElementById('svs_panel');
+    if (!fab) add(false, 'Floating button element', 'not in DOM — buildUI failed (see errors below)');
+    else {
+      const r = fab.getBoundingClientRect(), cssd = getComputedStyle(fab);
+      const inView = r.width > 0 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
+      add(cssd.display !== 'none' && inView ? true : 'warn', 'Floating button', `display:${cssd.display}, rect ${Math.round(r.left)},${Math.round(r.top)} ${Math.round(r.width)}×${Math.round(r.height)}, z:${cssd.zIndex}${inView ? '' : ' — OFF SCREEN, use "Reset button position"'}`);
+    }
+    add(!!panel, 'Panel element', panel ? `display:${getComputedStyle(panel).display}` : 'missing');
+    add($('#svs_drawer_body').length ? true : 'warn', 'Extensions drawer entry', $('#svs_drawer_body').length ? 'present' : 'missing');
+    add($('#svs_wand').length ? true : 'warn', 'Wand menu entry', $('#svs_wand').length ? 'present' : 'missing');
+    add(dbg.buildSteps.every((x) => x.ok) ? true : false, 'UI build steps', dbg.buildSteps.map((x) => (x.ok ? '✓' : '✗') + x.name).join(' '));
+  });
+  await safe('Settings', async () => {
+    const s = S();
+    add(true, 'Settings', `enabled=${s.enabled}, lang=${s.lang}, opacity=${s.opacity}, autoEval=${s.autoEval}, ctx=${s.ctxMessages}, worlds=${s.worlds.length}`);
+  });
+  await safe('Chat', async () => {
+    const c = ctx(), cs = CS(), w = currentWorld();
+    add(Array.isArray(c.chat), 'Chat', `${c.chat?.length ?? '?'} messages, user "${c.name1}", character "${c.name2 ?? '?'}"${c.groupId ? ', group chat' : ''}`);
+    add(!!cs, 'Chat metadata', cs ? 'available' : 'unavailable — open a chat first');
+    add(w ? true : 'warn', 'World bound to this chat', w ? `"${w.name}" · character "${w.character || '(empty)'}" · ${cs.points} ${w.pointName}` : 'NONE — the System stays silent until you pick/create one in the World tab');
+    add(lastUserIndex() >= 0 ? true : 'warn', 'Player message to evaluate', lastUserIndex() >= 0 ? `index ${lastUserIndex()}, last evaluated ${cs?.lastUserIdx}` : 'no user message yet');
+  });
+  await safe('Events', async () => {
+    const ev = dbg.events, fmt = (k) => ev[k] ? `${ev[k].n}× (last ${hhmm(ev[k].last)})` : 'never fired';
+    add(dbg.listeners, 'Event listeners registered', String(dbg.listeners));
+    add(true, 'CHARACTER_MESSAGE_RENDERED', fmt('rendered'));
+    add(true, 'GENERATION_ENDED', fmt('gen_ended'));
+    add(true, 'CHAT_CHANGED', fmt('chat_changed'));
+    add(dbg.lastSkip ? 'warn' : true, 'Last auto-evaluation skip reason', dbg.lastSkip || 'none');
+  });
+  await safe('Connection', async () => {
+    const c = ctx(), s = S(), profiles = getProfiles();
+    add(!!c.generateRaw, 'generateRaw', typeof c.generateRaw);
+    add(c.ConnectionManagerRequestService ? true : 'warn', 'ConnectionManagerRequestService', c.ConnectionManagerRequestService ? 'available' : 'missing (enable the Connection Manager extension)');
+    add(profiles.length ? true : 'warn', 'Connection profiles', `${profiles.length} found${profiles.length ? ': ' + profiles.map((p) => p.name).join(', ') : ''}`);
+    if (s.profileId) add(profiles.some((p) => p.id === s.profileId) ? true : false, 'Selected profile', profiles.find((p) => p.id === s.profileId)?.name || 'selected profile no longer exists — falls back to current connection');
+    else add(true, 'Selected profile', 'current connection');
+    add(true, 'Lorebooks visible', String(getLorebookNames().length));
+  });
+  await safe('Model', async () => {
+    const t0 = performance.now();
+    try {
+      const raw = await withTimeout(llm('You are a connection test endpoint. Output ONLY JSON.', 'Reply with exactly this JSON and nothing else: {"ok":true}', 300), 60000, 'model call');
+      const j = extractJSON(raw);
+      add(raw ? (j && j.ok ? true : 'warn') : false, 'Model call', `${Math.round(performance.now() - t0)} ms · ${raw ? (j && j.ok ? 'valid JSON' : 'reply is not the expected JSON') : 'EMPTY reply'} · raw: ${JSON.stringify(raw.slice(0, 160))}`);
+    } catch (e) { add(false, 'Model call', String(e?.message || e)); logErr('diag:model', e); }
+  });
+  await safe('Wiki', async () => {
+    try {
+      const j = await withTimeout(fetch('https://scumvillain.fandom.com/api.php?action=query&meta=siteinfo&format=json&origin=*').then((r) => r.json()), 10000, 'wiki request');
+      add(!!j?.query ? true : 'warn', 'Fandom API (CORS)', j?.query ? 'reachable' : 'unexpected response');
+    } catch (e) { add('warn', 'Fandom API (CORS)', 'not reachable: ' + (e?.message || e) + ' — wiki URLs will not work; use notes/lorebook instead'); }
+  });
+
+  items.push({ ok: dbg.errors.length ? 'warn' : true, label: 'Recorded errors', detail: dbg.errors.length ? dbg.errors.map((e) => `[${hhmm(e.time)}] ${e.where}: ${e.msg.split('\n')[0]}`).join('\n') : 'none' });
+  if (dbg.lastRaw) items.push({ ok: true, label: `Last raw model reply (${hhmm(dbg.lastRawAt)})`, detail: dbg.lastRaw.slice(0, 600) });
+  diag.items = items; diag.at = Date.now(); diag.running = false; render();
+}
+function diagText() {
+  const mark = (o) => (o === true ? 'OK  ' : o === 'warn' ? 'WARN' : 'FAIL');
+  return `The System v${VERSION} diagnostics — ${new Date(diag.at).toISOString()}\n` + diag.items.map((i) => `[${mark(i.ok)}] ${i.label}${i.detail ? ' — ' + i.detail : ''}`).join('\n');
+}
+function viewDiag() {
+  const list = diag.items.map((i) => {
+    const k = i.ok === true ? 'ok' : i.ok === 'warn' ? 'warn' : 'fail';
+    const ic = { ok: 'fa-circle-check', warn: 'fa-triangle-exclamation', fail: 'fa-circle-xmark' }[k];
+    return `<div class="svs-dg ${k}"><i class="fa-solid ${ic}"></i><div><b>${esc(i.label)}</b>${i.detail ? `<pre>${esc(i.detail)}</pre>` : ''}</div></div>`;
+  }).join('');
+  const nf = diag.items.filter((i) => i.ok === false).length, nw = diag.items.filter((i) => i.ok === 'warn').length;
+  return `
+  <p class="svs-hint">${t('diag_hint')}</p>
+  <button class="svs-btn svs-primary wide" data-act="diag-run" ${diag.running ? 'disabled' : ''}><i class="fa-solid ${diag.running ? 'fa-circle-notch fa-spin' : 'fa-stethoscope'}"></i> ${diag.running ? t('diag_running') : t('diag_run')}</button>
+  ${diag.items.length ? `<div class="svs-sum"><span class="fail">${nf} fail</span><span class="warn">${nw} warn</span><span class="ok">${diag.items.length - nf - nw} ok</span></div>
+  <div class="svs-dglist">${list}</div>
+  <button class="svs-btn wide" data-act="diag-copy"><i class="fa-regular fa-copy"></i> ${t('diag_copy')}</button>` : ''}`;
+}
+async function copyText(txt) {
+  try { await navigator.clipboard.writeText(txt); }
+  catch {
+    const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  window.toastr?.success(t('diag_copied'));
+}
+window.__svsDiag = async () => { await runDiag(); console.log(diagText()); return diagText(); };
 
 /* ---------------------------------------------------------------- render */
 function render() {
-  const s = S();
-  if (!$('#svs_panel').length) return;
-  const tabs = ['status', 'missions', 'shop', 'world', 'settings'];
-  $('#svs_tabs').html(tabs.map((k) => `<button class="svs-tab ${s.tab === k ? 'on' : ''}" data-act="tab" data-tab="${k}">${t('tab_' + k)}</button>`).join(''));
-  $('#svs_title').text(`【 ${t('title')} 】`);
-  const cs = CS(), w = currentWorld();
-  $('#svs_pts').text(w && cs ? `${cs.points} ${w.pointName}` : '');
-  const views = { status: viewStatus, missions: viewMissions, shop: viewShop, world: viewWorld, settings: viewSettings };
-  const body = document.getElementById('svs_body');
-  const top = body.scrollTop;
-  body.innerHTML = views[s.tab]();
-  body.scrollTop = top;
-  $('#svs_panel').toggleClass('svs-hidden', !s.open || !s.enabled);
-  $('#svs_fab').toggleClass('svs-hidden', !s.showFab || !s.enabled);
-  $('#svs_panel,#svs_fab').css('opacity', s.opacity);
+  try {
+    const s = S();
+    if (!$('#svs_panel').length) return;
+    const tabs = ['status', 'missions', 'shop', 'world', 'settings'];
+    $('#svs_tabs').html(tabs.map((k) => `<button class="svs-tab ${s.tab === k ? 'on' : ''}" data-act="tab" data-tab="${k}" title="${t('tab_' + k)}"><i class="fa-solid ${TAB_ICON[k]}"></i><span>${t('tab_' + k)}</span></button>`).join(''));
+    $('#svs_title').text(`【 ${t('title')} 】`);
+    const cs = CS(), w = currentWorld();
+    $('#svs_pts').html(w && cs ? `<i class="fa-solid fa-coins"></i> ${cs.points}` : '');
+    const views = { status: viewStatus, missions: viewMissions, shop: viewShop, world: viewWorld, settings: viewSettings, diag: viewDiag };
+    const body = document.getElementById('svs_body');
+    const top = body.scrollTop;
+    body.innerHTML = (views[s.tab] || viewStatus)();
+    body.scrollTop = top;
+    $('#svs_diagbtn').toggleClass('on', s.tab === 'diag');
+    $('#svs_panel').toggleClass('svs-hidden', !s.open || (!s.enabled && s.tab !== 'diag'));
+    $('#svs_fab').toggleClass('svs-hidden', !s.showFab || !s.enabled).toggleClass('svs-nobind', !w);
+    $('#svs_panel,#svs_fab').css('opacity', s.opacity);
+  } catch (e) { logErr('render', e); }
 }
 
 function renderDrawer() {
@@ -550,19 +750,27 @@ function renderDrawer() {
   $('#svs_drawer_body').html(`
     <label class="checkbox_label"><input type="checkbox" id="svs_d_en" ${s.enabled ? 'checked' : ''}><span>${t('s_enabled')}</span></label>
     <label>${t('s_lang')} <select id="svs_d_lang" class="text_pole"><option value="en" ${s.lang === 'en' ? 'selected' : ''}>English</option><option value="ru" ${s.lang === 'ru' ? 'selected' : ''}>Русский</option></select></label>
-    <div id="svs_d_open" class="menu_button">${t('open_btn')}</div>`);
+    <div class="flex-container">
+      <div id="svs_d_open" class="menu_button menu_button_icon"><i class="fa-solid fa-terminal"></i><span>${t('open_btn')}</span></div>
+      <div id="svs_d_diag" class="menu_button menu_button_icon"><i class="fa-solid fa-stethoscope"></i><span>${t('diag')}</span></div>
+    </div>`);
   $('#svs_wand_label').text(t('title'));
 }
 
 /* ------------------------------------------------------------------- UI */
-function openPanel(v) { S().open = v; save(); render(); }
+function openPanel(v, tab) { const s = S(); s.open = v; if (tab) s.tab = tab; save(); render(); }
+function resetFab() {
+  S().fabPos = null; save();
+  $('#svs_fab').css({ left: '', top: '', right: '', bottom: '' });
+  render();
+}
 
 function makeDraggable(el, onTap) {
   let down = false, moved = false, sx, sy, ox, oy;
   el.addEventListener('pointerdown', (e) => {
     down = true; moved = false; sx = e.clientX; sy = e.clientY;
     const r = el.getBoundingClientRect(); ox = r.left; oy = r.top;
-    el.setPointerCapture(e.pointerId);
+    try { el.setPointerCapture(e.pointerId); } catch { /* ignore */ }
   });
   el.addEventListener('pointermove', (e) => {
     if (!down) return;
@@ -578,130 +786,158 @@ function makeDraggable(el, onTap) {
     if (!moved) onTap();
     else { S().fabPos = { left: el.style.left, top: el.style.top }; save(); }
   });
+  el.addEventListener('pointercancel', () => { down = false; });
 }
 
 function buildUI() {
   const s = S();
-  $('body').append(`
-    <div id="svs_fab" class="svs-hidden" title="System">【S】</div>
-    <div id="svs_panel" class="svs-hidden" role="dialog">
-      <div class="svs-head">
-        <span id="svs_title"></span><span id="svs_pts"></span>
-        <span class="svs-spacer"></span>
-        <span class="svs-oprow">${opSlider()}</span>
-        <button id="svs_close" class="svs-x" aria-label="Close">✕</button>
-      </div>
-      <div id="svs_tabs" class="svs-tabs"></div>
-      <div id="svs_body" class="svs-body"></div>
-    </div>`);
-  if (s.fabPos) $('#svs_fab').css({ left: s.fabPos.left, top: s.fabPos.top, right: 'auto', bottom: 'auto' });
-  makeDraggable(document.getElementById('svs_fab'), () => openPanel(!S().open));
+  const step = (name, fn) => { try { fn(); dbg.buildSteps.push({ name, ok: true }); } catch (e) { dbg.buildSteps.push({ name, ok: false }); logErr('buildUI:' + name, e); } };
 
-  $('#extensions_settings2, #extensions_settings').first().append(`
-    <div class="inline-drawer">
-      <div class="inline-drawer-toggle inline-drawer-header"><b>The System</b><div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div></div>
-      <div class="inline-drawer-content" id="svs_drawer_body"></div>
-    </div>`);
-  $('#extensionsMenu').append(`<div id="svs_wand" class="list-group-item flex-container flexGap5"><div class="fa-solid fa-terminal extensionsMenuExtensionButton"></div><span id="svs_wand_label"></span></div>`);
-
-  const $d = $(document);
-  $d.on('click', '#svs_wand, #svs_d_open', () => openPanel(true));
-  $d.on('click', '#svs_close', () => openPanel(false));
-  $d.on('change', '#svs_d_en', (e) => { S().enabled = e.target.checked; save(); render(); });
-  $d.on('change', '#svs_d_lang', (e) => { S().lang = e.target.value; save(); renderDrawer(); render(); });
-
-  $d.on('input', '.svs-op', (e) => {
-    const v = clamp(Number(e.target.value) / 100, 0.25, 1);
-    S().opacity = v; $('.svs-op').val(Math.round(v * 100)); $('#svs_panel,#svs_fab').css('opacity', v); save();
+  step('panel', () => {
+    $('body').append(`
+      <div id="svs_fab" class="svs-hidden" title="System"><span>S</span></div>
+      <div id="svs_panel" class="svs-hidden" role="dialog" aria-label="System">
+        <div class="svs-head">
+          <span id="svs_title"></span><span id="svs_pts"></span>
+          <span class="svs-spacer"></span>
+          <span class="svs-oprow" title="Opacity"><i class="fa-regular fa-eye"></i>${opSlider()}</span>
+          <button id="svs_diagbtn" class="svs-x" aria-label="Diagnostics"><i class="fa-solid fa-stethoscope"></i></button>
+          <button id="svs_close" class="svs-x" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="svs_tabs" class="svs-tabs"></div>
+        <div id="svs_body" class="svs-body"></div>
+      </div>`);
+    if (s.fabPos) $('#svs_fab').css({ left: s.fabPos.left, top: s.fabPos.top, right: 'auto', bottom: 'auto' });
+    makeDraggable(document.getElementById('svs_fab'), () => openPanel(!S().open));
+    document.getElementById('svs_body').addEventListener('toggle', (e) => {
+      const k = e.target?.dataset?.sec; if (k) openSecs[k] = e.target.open;
+    }, true);
+  });
+  step('drawer', () => {
+    $('#extensions_settings2, #extensions_settings').first().append(`
+      <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header"><b>The System</b><div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div></div>
+        <div class="inline-drawer-content" id="svs_drawer_body"></div>
+      </div>`);
+  });
+  step('wand', () => {
+    $('#extensionsMenu').append(`<div id="svs_wand" class="list-group-item flex-container flexGap5"><div class="fa-solid fa-terminal extensionsMenuExtensionButton"></div><span id="svs_wand_label"></span></div>`);
   });
 
-  // field edits (no re-render, so typing is never interrupted)
-  $d.on('input change', '#svs_panel [data-field]', (e) => {
-    const w = currentWorld(); if (!w) return;
-    w[e.target.dataset.field] = e.target.value; save();
-  });
-  $d.on('change', '#svs_over', (e) => { overwrite = e.target.checked; });
-  $d.on('input', '#svs_ask', (e) => { askDraft = e.target.value; });
-  $d.on('keydown', '#svs_ask', (e) => { if (e.key === 'Enter') askSystem(); });
-  $d.on('change', '#svs_world', (e) => bindWorld(e.target.value));
-  $d.on('change', '#svs_file', async (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    importWorlds(await f.text()); e.target.value = '';
-  });
+  step('handlers', () => {
+    const $d = $(document);
+    $d.on('click', '#svs_wand, #svs_d_open', () => openPanel(true));
+    $d.on('click', '#svs_d_diag', () => { openPanel(true, 'diag'); runDiag(); });
+    $d.on('click', '#svs_diagbtn', () => { openPanel(true, S().tab === 'diag' ? 'status' : 'diag'); });
+    $d.on('click', '#svs_close', () => openPanel(false));
+    $d.on('change', '#svs_d_en', (e) => { S().enabled = e.target.checked; save(); render(); });
+    $d.on('change', '#svs_d_lang', (e) => { S().lang = e.target.value; save(); renderDrawer(); render(); });
 
-  // settings controls
-  const bind = (id, fn) => $d.on('change', id, (e) => { fn(e.target); save(); render(); });
-  bind('#svs_en', (el) => { S().enabled = el.checked; renderDrawer(); });
-  bind('#svs_lang', (el) => { S().lang = el.value; renderDrawer(); });
-  bind('#svs_outlang', (el) => { S().outLang = el.value; });
-  bind('#svs_profile', (el) => { S().profileId = el.value; });
-  bind('#svs_auto', (el) => { S().autoEval = el.checked; });
-  bind('#svs_ctxn', (el) => { S().ctxMessages = clamp(parseInt(el.value) || 6, 2, 30); });
-  bind('#svs_strict', (el) => { S().strict = el.value; });
-  bind('#svs_fabchk', (el) => { S().showFab = el.checked; });
-  bind('#svs_toast', (el) => { S().toasts = el.checked; });
+    $d.on('input', '.svs-op', (e) => {
+      const v = clamp(Number(e.target.value) / 100, 0.25, 1);
+      S().opacity = v; $('.svs-op').val(Math.round(v * 100)); $('.svs-opval').text(Math.round(v * 100) + '%');
+      $('#svs_panel,#svs_fab').css('opacity', v); save();
+    });
+    $d.on('input change', '#svs_panel [data-field]', (e) => {
+      const w = currentWorld(); if (!w) return;
+      w[e.target.dataset.field] = e.target.value; save();
+    });
+    $d.on('change', '#svs_over', (e) => { overwrite = e.target.checked; });
+    $d.on('input', '#svs_ask', (e) => { askDraft = e.target.value; });
+    $d.on('keydown', '#svs_ask', (e) => { if (e.key === 'Enter') askSystem(); });
+    $d.on('change', '#svs_world', (e) => bindWorld(e.target.value));
+    $d.on('change', '#svs_file', async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      importWorlds(await f.text()); e.target.value = '';
+    });
 
-  // buttons
-  $d.on('click', '#svs_panel [data-act]', async (e) => {
-    const el = e.currentTarget, act = el.dataset.act, cs = CS(), w = currentWorld(), st = S();
-    switch (act) {
-      case 'tab': st.tab = el.dataset.tab; save(); render(); break;
-      case 'eval': evaluate(true); break;
-      case 'ask': askSystem(); break;
-      case 'reset':
-        if (cs && await confirmBox(t('confirm_reset'))) {
-          Object.assign(cs, { points: 100, log: [], missions: [], inventory: [], lastUserIdx: -1 });
-          bindWorld(cs.worldId);
+    const bind = (id, fn) => $d.on('change', id, (e) => { fn(e.target); save(); render(); });
+    bind('#svs_en', (el) => { S().enabled = el.checked; renderDrawer(); });
+    bind('#svs_lang', (el) => { S().lang = el.value; renderDrawer(); });
+    bind('#svs_outlang', (el) => { S().outLang = el.value; });
+    bind('#svs_profile', (el) => { S().profileId = el.value; });
+    bind('#svs_auto', (el) => { S().autoEval = el.checked; });
+    bind('#svs_ctxn', (el) => { S().ctxMessages = clamp(parseInt(el.value) || 6, 2, 30); });
+    bind('#svs_strict', (el) => { S().strict = el.value; });
+    bind('#svs_fabchk', (el) => { S().showFab = el.checked; });
+    bind('#svs_toast', (el) => { S().toasts = el.checked; });
+
+    $d.on('click', '#svs_panel [data-act]', async (e) => {
+      const el = e.currentTarget, act = el.dataset.act, cs = CS(), w = currentWorld(), st = S();
+      try {
+        switch (act) {
+          case 'tab': st.tab = el.dataset.tab; save(); render(); break;
+          case 'eval': evaluate(true); break;
+          case 'ask': askSystem(); break;
+          case 'reset':
+            if (cs && await confirmBox(t('confirm_reset'))) {
+              Object.assign(cs, { points: 100, log: [], missions: [], inventory: [], lastUserIdx: -1 });
+              bindWorld(cs.worldId);
+            }
+            break;
+          case 'm-ai': aiMission(); break;
+          case 'm-add': {
+            const title = $('#svs_mt').val().trim(); if (!title || !cs) break;
+            addMission(cs, { title, desc: '', reward: $('#svs_mr').val() || 50 }); saveChat(); render(); break;
+          }
+          case 'm-done': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m) { completeMission(m); saveChat(); render(); } break; }
+          case 'm-drop': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m) { m.status = 'failed'; saveChat(); render(); } break; }
+          case 'buy': {
+            const it = parseShop(w.shopText)[Number(el.dataset.i)]; if (!it) break;
+            if (cs.points < it.cost) { window.toastr?.warning(t('not_enough')); break; }
+            cs.points -= it.cost; cs.inventory.push({ name: it.name, desc: it.desc });
+            pushLog(cs, { kind: 'info', text: t('bought_item', { item: it.name }), delta: -it.cost });
+            saveChat(); render(); break;
+          }
+          case 'use': {
+            const it = cs.inventory.splice(Number(el.dataset.i), 1)[0];
+            if (it) pushLog(cs, { kind: 'info', text: t('used_item', { item: it.name }) });
+            saveChat(); render(); break;
+          }
+          case 'w-new': { const nw = newWorld(); st.worlds.push(nw); save(); bindWorld(nw.id); break; }
+          case 'w-dup': { const nw = newWorld({ ...w, id: uid('w'), name: w.name + ' (2)' }); st.worlds.push(nw); save(); bindWorld(nw.id); break; }
+          case 'w-del':
+            if (w && await confirmBox(t('confirm_del'))) { st.worlds = st.worlds.filter((x) => x.id !== w.id); save(); bindWorld(''); }
+            break;
+          case 'w-exp': download(`system-world-${(w.name || 'world').replace(/[^\w-]+/g, '_')}.json`, { type: 'svs-world-profile', version: 1, worlds: [w] }); break;
+          case 'w-expall': download('system-worlds.json', { type: 'svs-world-profile', version: 1, worlds: st.worlds }); break;
+          case 'w-imp': $('#svs_file').trigger('click'); break;
+          case 'fill': fillWorld(); break;
+          case 'refresh': render(); break;
+          case 'profiles': render(); window.toastr?.info(t('profile_reloaded', { n: getProfiles().length })); break;
+          case 'reset-fab': resetFab(); break;
+          case 'diag-run': runDiag(); break;
+          case 'diag-copy': copyText(diagText()); break;
         }
-        break;
-      case 'm-ai': aiMission(); break;
-      case 'm-add': {
-        const title = $('#svs_mt').val().trim(); if (!title || !cs) break;
-        addMission(cs, { title, desc: '', reward: $('#svs_mr').val() || 50 }); saveChat(); render(); break;
-      }
-      case 'm-done': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m) { completeMission(m); saveChat(); render(); } break; }
-      case 'm-drop': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m) { m.status = 'failed'; saveChat(); render(); } break; }
-      case 'buy': {
-        const it = parseShop(w.shopText)[Number(el.dataset.i)]; if (!it) break;
-        if (cs.points < it.cost) { window.toastr?.warning(t('not_enough')); break; }
-        cs.points -= it.cost; cs.inventory.push({ name: it.name, desc: it.desc });
-        pushLog(cs, { kind: 'info', text: t('bought_item', { item: it.name }), delta: -it.cost });
-        saveChat(); render(); break;
-      }
-      case 'use': {
-        const it = cs.inventory.splice(Number(el.dataset.i), 1)[0];
-        if (it) pushLog(cs, { kind: 'info', text: t('used_item', { item: it.name }) });
-        saveChat(); render(); break;
-      }
-      case 'w-new': { const nw = newWorld(); st.worlds.push(nw); save(); bindWorld(nw.id); break; }
-      case 'w-dup': { const nw = newWorld({ ...w, id: uid('w'), name: w.name + ' (2)' }); st.worlds.push(nw); save(); bindWorld(nw.id); break; }
-      case 'w-del':
-        if (w && await confirmBox(t('confirm_del'))) {
-          st.worlds = st.worlds.filter((x) => x.id !== w.id); save(); bindWorld('');
-        }
-        break;
-      case 'w-exp': download(`system-world-${(w.name || 'world').replace(/[^\w-]+/g, '_')}.json`, { type: 'svs-world-profile', version: 1, worlds: [w] }); break;
-      case 'w-expall': download('system-worlds.json', { type: 'svs-world-profile', version: 1, worlds: st.worlds }); break;
-      case 'w-imp': $('#svs_file').trigger('click'); break;
-      case 'fill': fillWorld(); break;
-      case 'refresh': render(); break;
-      case 'profiles': render(); window.toastr?.info(t('profile_reloaded', { n: getProfiles().length })); break;
-    }
+      } catch (err) { logErr('click:' + act, err); window.toastr?.error(t('err', { err: err.message || err })); }
+    });
+    window.addEventListener('resize', () => {
+      const f = document.getElementById('svs_fab'); if (!f || !f.style.left) return;
+      f.style.left = clamp(parseFloat(f.style.left) || 0, 0, innerWidth - f.offsetWidth) + 'px';
+      f.style.top = clamp(parseFloat(f.style.top) || 0, 0, innerHeight - f.offsetHeight) + 'px';
+    });
   });
 }
 
 /* ------------------------------------------------------------------ init */
-jQuery(() => {
+function init() {
   S();
   buildUI();
-  renderDrawer();
+  try { renderDrawer(); } catch (e) { logErr('renderDrawer', e); }
   render();
-  const { eventSource, event_types } = ctx();
-  eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, () => {
-    const s = S();
-    if (s.enabled && s.autoEval) setTimeout(() => evaluate(false), 400);
-  });
-  eventSource.on(event_types.CHAT_CHANGED, () => { askDraft = ''; render(); });
-  console.log('[System] loaded');
-});
+  try {
+    const { eventSource, event_types } = ctx();
+    const auto = (name) => () => {
+      hit(name);
+      const s = S();
+      if (s.enabled && s.autoEval) setTimeout(() => evaluate(false).catch((e) => logErr('auto-eval', e)), 500);
+    };
+    eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, auto('rendered'));
+    if (event_types.GENERATION_ENDED) eventSource.on(event_types.GENERATION_ENDED, auto('gen_ended'));
+    eventSource.on(event_types.CHAT_CHANGED, () => { hit('chat_changed'); askDraft = ''; render(); });
+    dbg.listeners = true;
+  } catch (e) { logErr('event registration', e); }
+  console.log(`[System] v${VERSION} loaded`);
+}
+try { jQuery(init); } catch (e) { console.error('[System] fatal init error', e); }
 })();
