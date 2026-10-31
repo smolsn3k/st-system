@@ -47,7 +47,7 @@ en: {
   diag_hint: 'Run the checks, then copy the report and send it to whoever helps you debug.', diag_reset_fab: 'Reset button position',
   sec_source: 'Sources', sec_profile: 'Profile', sec_shop: 'Shop & missions', st_missions: 'Missions', st_items: 'Items', st_last: 'Last verdict',
   v_in_character: 'In character', v_ooc: 'OOC', v_none: '—', parse_fallback: 'The model did not return valid JSON; showing its raw reply.',
-  no_world_dot: 'No world bound to this chat'
+  no_world_dot: 'No world bound to this chat', s_fabsize: 'Button size'
 },
 ru: {
   title: 'Система', tab_status: 'Статус', tab_missions: 'Задания', tab_shop: 'Магазин', tab_world: 'Мир', tab_settings: 'Настройки',
@@ -88,7 +88,7 @@ ru: {
   diag_hint: 'Запустите проверки, скопируйте отчёт и отправьте тому, кто помогает с отладкой.', diag_reset_fab: 'Сбросить позицию кнопки',
   sec_source: 'Источники', sec_profile: 'Профиль', sec_shop: 'Магазин и задания', st_missions: 'Задания', st_items: 'Предметы', st_last: 'Последний вердикт',
   v_in_character: 'В образе', v_ooc: 'OOC', v_none: '—', parse_fallback: 'Модель не вернула корректный JSON; показан её сырой ответ.',
-  no_world_dot: 'К чату не привязан мир'
+  no_world_dot: 'К чату не привязан мир', s_fabsize: 'Размер кнопки'
 }
 };
 function t(k, v) {
@@ -99,7 +99,7 @@ function t(k, v) {
 }
 
 /* ------------------------------------------------------------ debug store */
-const VERSION = '1.1.2';
+const VERSION = '1.1.3';
 const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
 function logErr(where, e) {
   const msg = (e && (e.stack || e.message)) || String(e);
@@ -113,7 +113,7 @@ const hit = (name) => { dbg.events[name] = { n: (dbg.events[name]?.n || 0) + 1, 
 const DEFAULTS = {
   enabled: true, lang: 'en', outLang: 'ui', opacity: 0.95, profileId: '', autoEval: true,
   ctxMessages: 6, strict: 'normal', showFab: true, toasts: true, open: false, tab: 'status',
-  fabPos: null, worlds: []
+  fabPos: null, fabSize: 38, worlds: []
 };
 function S() {
   const { extensionSettings } = ctx();
@@ -603,6 +603,7 @@ function viewSettings() {
     <label>${t('s_ctx')}<input type="number" id="svs_ctxn" min="2" max="30" value="${s.ctxMessages}"></label>
     <label>${t('s_strict')}${sel('svs_strict', s.strict, [['gentle', t('gentle')], ['normal', t('normal')], ['harsh', t('harsh')]])}</label>
     ${sw('svs_fabchk', s.showFab, t('s_fab'))}
+    <label>${t('s_fabsize')} <b class="svs-fabval">${s.fabSize}px</b><input type="range" id="svs_fabsize" min="28" max="64" value="${s.fabSize}"></label>
     ${sw('svs_toast', s.toasts, t('s_toast'))}
   </div>
   <button class="svs-btn wide" data-act="tab" data-tab="diag"><i class="fa-solid fa-stethoscope"></i> ${t('diag')}</button>
@@ -739,6 +740,20 @@ function syncTop(el, visible) {
     else if (!visible && open) el.hidePopover();
   } catch (e) { logErr('popover', e); }
 }
+function applyFab() {
+  const f = document.getElementById('svs_fab'); if (!f) return;
+  const z = clamp(Number(S().fabSize) || 38, 28, 64);
+  f.style.width = z + 'px'; f.style.height = z + 'px'; f.style.borderRadius = Math.round(z * 0.3) + 'px';
+  const sp = f.querySelector('span'); if (sp) sp.style.fontSize = Math.round(z * 0.52) + 'px';
+}
+/* Close SillyTavern's own open side drawers so they don't sit on top of the System. */
+function closeStDrawers() {
+  try {
+    document.querySelectorAll('.drawer-content.openDrawer:not(.pinnedOpen)').forEach((d) => {
+      const tg = d.closest('.drawer')?.querySelector('.drawer-toggle'); if (tg) tg.click();
+    });
+  } catch (e) { logErr('closeStDrawers', e); }
+}
 /* Size and place the panel in explicit pixels from the REAL visible viewport. */
 function layoutPanel() {
   const p = document.getElementById('svs_panel');
@@ -776,9 +791,8 @@ function render() {
     const showPanel = s.open && (s.enabled || s.tab === 'diag'), showFab = s.showFab && s.enabled;
     $('#svs_panel').toggleClass('svs-hidden', !showPanel);
     $('#svs_fab').toggleClass('svs-hidden', !showFab).toggleClass('svs-nobind', !w);
-    syncTop(document.getElementById('svs_panel'), showPanel);
-    syncTop(document.getElementById('svs_fab'), showFab);
     if (showPanel) layoutPanel();
+    applyFab();
     $('#svs_panel,#svs_fab').css('opacity', s.opacity);
   } catch (e) { logErr('render', e); }
 }
@@ -796,15 +810,15 @@ function renderDrawer() {
   const g = (id) => document.getElementById(id);
   if (g('svs_d_en')) g('svs_d_en').onchange = (e) => { S().enabled = e.target.checked; render(); save(); };
   if (g('svs_d_lang')) g('svs_d_lang').onchange = (e) => { S().lang = e.target.value; renderDrawer(); render(); save(); };
-  if (g('svs_d_open')) g('svs_d_open').onclick = () => openPanel(true);
-  if (g('svs_d_diag')) g('svs_d_diag').onclick = () => { openPanel(true, 'diag'); runDiag(); };
+  if (g('svs_d_open')) g('svs_d_open').onclick = () => { closeStDrawers(); openPanel(true); };
+  if (g('svs_d_diag')) g('svs_d_diag').onclick = () => { closeStDrawers(); openPanel(true, 'diag'); runDiag(); };
 }
 
 /* ------------------------------------------------------------------- UI */
 function openPanel(v, tab) {
   const s = S(); s.open = v; if (tab) s.tab = tab;
   render(); save();
-  if (v) setTimeout(() => ensureReachable(true), 250);
+  if (v) setTimeout(ensureReachable, 250);
 }
 /* Detect another element covering the panel (which would swallow taps) and try to lift the panel above it. */
 function geom() {
@@ -829,17 +843,10 @@ function hitTest() {
   }
   return { ok: true, info: 'taps reach the panel' };
 }
-function ensureReachable(toast) {
+function ensureReachable() {
   layoutPanel();
-  let h = hitTest();
-  if (h.ok === false) {
-    const p = document.getElementById('svs_panel'), f = document.getElementById('svs_fab');
-    p.style.zIndex = '2147483000'; if (f) f.style.zIndex = '2147483000';
-    const h2 = hitTest();
-    dbg.hitFix = `${h.info} -> after raising z-index: ${h2.info}`;
-    if (toast && window.toastr) window.toastr.warning(dbg.hitFix, 'The System');
-    h = h2;
-  }
+  const h = hitTest();
+  if (h.ok === false) dbg.hitFix = h.info;
   return h;
 }
 function resetFab() {
@@ -878,8 +885,8 @@ function buildUI() {
 
   step('panel', () => {
     $('body').append(`
-      <div id="svs_fab" class="svs-hidden" popover="manual" title="System"><span>S</span></div>
-      <div id="svs_panel" class="svs-hidden" popover="manual" role="dialog" aria-label="System">
+      <div id="svs_fab" class="svs-hidden" title="System"><span>S</span></div>
+      <div id="svs_panel" class="svs-hidden" role="dialog" aria-label="System">
         <div class="svs-head">
           <span id="svs_title"></span><span id="svs_pts"></span>
           <span class="svs-spacer"></span>
@@ -906,7 +913,7 @@ function buildUI() {
   step('wand', () => {
     $('#extensionsMenu').append(`<div id="svs_wand" class="list-group-item flex-container flexGap5"><div class="fa-solid fa-terminal extensionsMenuExtensionButton"></div><span id="svs_wand_label"></span></div>`);
     const wand = document.getElementById('svs_wand');
-    if (wand) wand.onclick = () => openPanel(true);
+    if (wand) wand.onclick = () => { closeStDrawers(); openPanel(true); };
   });
 
   step('handlers', () => {
@@ -1009,6 +1016,9 @@ function buildUI() {
         document.getElementById('svs_fab').style.opacity = v; save();
       } else if (el.dataset && el.dataset.field) {
         const w = currentWorld(); if (w) { w[el.dataset.field] = el.value; save(); }
+      } else if (el.id === 'svs_fabsize') {
+        S().fabSize = Number(el.value); applyFab(); save();
+        const lab = document.querySelector('.svs-fabval'); if (lab) lab.textContent = el.value + 'px';
       } else if (el.id === 'svs_ask') askDraft = el.value;
     });
     panelEl.addEventListener('change', async (e) => {
@@ -1035,7 +1045,8 @@ function buildUI() {
 
 /* ------------------------------------------------------------------ init */
 function init() {
-  S();
+  S().open = false; // never reopen automatically after a reload
+
   buildUI();
   try { renderDrawer(); } catch (e) { logErr('renderDrawer', e); }
   render();
