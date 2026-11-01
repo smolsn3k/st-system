@@ -32,3 +32,7 @@ If the floating button is off screen: Settings → Reset button position.
 - Settings → Appearance: opacity, **background blur** slider, **rounded corners** on/off, floating-button size.
 - Settings → Avatar: from your active chat persona, from the chat character, or a custom image you upload.
 - The floating button is now always placed inside the visible screen and rendered first; "Reset button position" also restores its visibility, size and opacity.
+
+## v1.3.1
+- Fixed background blur: the window frame is now a thin outline instead of a solid sheet, so the blurred page is visible through the glass. Blur applies to the extension's own window background only (never to the chat or the rest of SillyTavern). Higher blur also makes the glass more see-through.
+- The floating button hides while the window is open.

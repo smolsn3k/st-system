@@ -37,12 +37,17 @@
 }
 @keyframes svs-in { from { transform: translateY(14px); opacity: 0; } }
 .svs-frame {
-  position: absolute; inset: 0; opacity: var(--svs-op, 1); background: linear-gradient(180deg, #8ff3ff, var(--cy2) 60%, #7fe9ff);
-  clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, var(--c2) 100%, 0 calc(100% - var(--c2)));
+  position: absolute; inset: 0; opacity: var(--svs-op, 1); pointer-events: none;
+  background: linear-gradient(180deg, #8ff3ff, var(--cy2) 60%, #7fe9ff);
+  /* evenodd: outer cut-corner shape minus the same shape inset by 1.5px = a thin glowing outline */
+  clip-path: polygon(evenodd,
+    0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, var(--c2) 100%, 0 calc(100% - var(--c2)), 0 0,
+    1.5px 1.5px, calc(100% - var(--c) - 0.6px) 1.5px, calc(100% - 1.5px) calc(var(--c) + 0.6px), calc(100% - 1.5px) calc(100% - 1.5px),
+    max(1.5px, calc(var(--c2) + 0.6px)) calc(100% - 1.5px), 1.5px calc(100% - max(1.5px, calc(var(--c2) + 0.6px))), 1.5px 1.5px);
 }
 .svs-inner {
   position: absolute; inset: 1.5px; display: flex; flex-direction: column; overflow: hidden; opacity: var(--svs-op, 1);
-  background: linear-gradient(180deg, rgba(24, 14, 34, 0.8) 0%, rgba(14, 18, 38, 0.78) 55%, rgba(10, 40, 58, 0.72) 100%);
+  background: linear-gradient(180deg, rgba(24, 14, 34, var(--svs-g1, 0.8)) 0%, rgba(14, 18, 38, var(--svs-g2, 0.78)) 55%, rgba(10, 40, 58, var(--svs-g3, 0.72)) 100%);
   clip-path: polygon(0 0, calc(100% - var(--c) + 1px) 0, 100% calc(var(--c) - 1px), 100% 100%, calc(var(--c2) - 1px) 100%, 0 calc(100% - var(--c2) + 1px));
 }
 /* Backdrop blur lives on its own sibling layer: an ancestor with opacity/filter would stop it from seeing the page behind. */
@@ -240,7 +245,7 @@
 /* ═════════ in-chat popup ═════════ */
 .svs-chatpop {
   display: block; position: relative; margin: 8px 0; color: var(--txt); font-size: 13.5px; line-height: 1.45; text-align: left; overflow: hidden;
-  background: linear-gradient(180deg, rgba(24, 14, 34, 0.8), rgba(12, 32, 50, 0.76));
+  background: linear-gradient(180deg, rgba(24, 14, 34, var(--svs-g1, 0.8)), rgba(12, 32, 50, var(--svs-g3, 0.72)));
   -webkit-backdrop-filter: blur(var(--svs-blur, 0px)); backdrop-filter: blur(var(--svs-blur, 0px));
   border: 1px solid rgba(77, 232, 255, 0.6); border-left-width: 3px; border-radius: 2px;
   box-shadow: 0 0 12px rgba(77, 232, 255, 0.28), inset 0 0 22px rgba(77, 232, 255, 0.06);
@@ -284,7 +289,7 @@
 
 /* ═════════ rounded corners (optional) ═════════ */
 body.svs-round #svs_panel { --r: 20px; border-radius: var(--r); }
-body.svs-round .svs-frame { clip-path: inset(0 round var(--r)); }
+body.svs-round .svs-frame { background: none; clip-path: none; border: 1.5px solid #6fe9ff; border-radius: var(--r); box-shadow: 0 0 12px rgba(77, 232, 255, 0.35); }
 body.svs-round .svs-inner, body.svs-round .svs-blur { clip-path: inset(0 round calc(var(--r) - 1px)); }
 body.svs-round .svs-inner::after { clip-path: inset(0 round calc(var(--r) - 8px)); }
 body.svs-round .svs-btn, body.svs-round .svs-chip-btn, body.svs-round .svs-seg button, body.svs-round #svs_pts,
@@ -302,7 +307,7 @@ body.svs-round #svs_panel textarea, body.svs-round #svs_panel select { border-ra
 body.svs-round .svs-chatpop { border-radius: 14px; }
 @media (max-width: 640px) {
   body.svs-round #svs_panel { border-radius: var(--r) var(--r) 0 0; }
-  body.svs-round .svs-frame { clip-path: inset(0 round var(--r) var(--r) 0 0); }
+  body.svs-round .svs-frame { border-radius: var(--r) var(--r) 0 0; border-bottom: 0; }
   body.svs-round .svs-inner, body.svs-round .svs-blur { clip-path: inset(0 round calc(var(--r) - 1px) calc(var(--r) - 1px) 0 0); }
   body.svs-round .svs-inner::after { clip-path: inset(0 round calc(var(--r) - 8px) calc(var(--r) - 8px) 0 0); }
 }

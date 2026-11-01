@@ -121,7 +121,7 @@ function t(k, v) {
 }
 
 /* ------------------------------------------------------------ debug store */
-const VERSION = '1.3.0';
+const VERSION = '1.3.1';
 const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
 function logErr(where, e) {
   const msg = (e && (e.stack || e.message)) || String(e);
@@ -893,7 +893,11 @@ function syncTop(el, visible) {
 function applyLook() {
   const s = S(), p = document.getElementById('svs_panel');
   if (p) { p.style.setProperty('--svs-op', String(s.opacity)); p.style.setProperty('--svs-blur', clamp(Number(s.blur) || 0, 0, 30) + 'px'); }
-  document.documentElement.style.setProperty('--svs-blur', clamp(Number(s.blur) || 0, 0, 30) + 'px');
+  /* More blur = more see-through glass, so the blurred background behind the window is actually visible. Extension window only. */
+  const b = clamp(Number(s.blur) || 0, 0, 30), g1 = clamp(0.92 - 0.02 * b, 0.42, 0.92);
+  const root = document.documentElement.style;
+  root.setProperty('--svs-blur', b + 'px');
+  root.setProperty('--svs-g1', g1.toFixed(2)); root.setProperty('--svs-g2', (g1 - 0.02).toFixed(2)); root.setProperty('--svs-g3', Math.max(0.36, g1 - 0.08).toFixed(2));
   document.body.classList.toggle('svs-round', !!s.rounded);
   const f = document.getElementById('svs_fab'); if (f) f.style.opacity = String(Math.max(0.5, s.opacity));
 }
@@ -941,7 +945,9 @@ function placeFab() {
 }
 function renderFab() {
   try {
-    const s = S(), show = !!(s.showFab && s.enabled);
+    const s = S();
+    const panelOpen = s.open && (s.enabled || s.tab === 'diag'); // the open window has its own close button; hide the button so it never overlaps
+    const show = !!(s.showFab && s.enabled) && !panelOpen;
     $('#svs_fab').toggleClass('svs-hidden', !show).toggleClass('svs-nobind', !currentWorld());
     applyFab();
     if (show) placeFab();
