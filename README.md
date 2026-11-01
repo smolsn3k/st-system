@@ -26,3 +26,9 @@ If the floating button is off screen: Settings → Reset button position.
 - **Role**: bind to a *canon character* or insert an *original character* (own story, entry point in the canon timeline). The System's prompts and the AI fill adapt to the mode.
 - **In-chat popup**: a collapsible System window drawn in the chat (top / middle / bottom of a message; attach to the character's reply or to your message). It is display-only: nothing is written into the chat or the prompt, so the character never knows.
 - **HUD look** modelled on a holographic system window.
+
+## v1.3
+- No Chinese text anywhere; titles are capitalised ("System" / "Система").
+- Settings → Appearance: opacity, **background blur** slider, **rounded corners** on/off, floating-button size.
+- Settings → Avatar: from your active chat persona, from the chat character, or a custom image you upload.
+- The floating button is now always placed inside the visible screen and rendered first; "Reset button position" also restores its visibility, size and opacity.

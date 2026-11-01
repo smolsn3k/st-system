@@ -5,16 +5,15 @@
   --line: rgba(77, 232, 255, 0.28); --glass: rgba(77, 232, 255, 0.06);
   --red: #ff6b8a; --amber: #ffd27a; --ok: #6dffd2;
   --glow: 0 0 6px rgba(77, 232, 255, 0.9), 0 0 16px rgba(77, 232, 255, 0.55);
-  font-family: "Segoe UI Variable Text", "Trebuchet MS", ui-rounded, "Noto Sans", system-ui, -apple-system, "Noto Sans CJK SC", sans-serif;
+  font-family: "Segoe UI Variable Text", "Trebuchet MS", ui-rounded, "Noto Sans", system-ui, -apple-system, sans-serif;
 }
 .svs-hidden { display: none !important; }
 #svs_panel *, #svs_panel *::before, #svs_panel *::after { box-sizing: border-box; }
-.svs-cn { font-family: "Noto Serif CJK SC", "Songti SC", "SimSun", serif; color: var(--ice); letter-spacing: 0.04em; }
 .pos { color: var(--ok); } .neg { color: var(--red); }
 
 /* ═════════ floating button ═════════ */
 #svs_fab {
-  position: fixed; right: 10px; bottom: 120px; z-index: 2990; width: 38px; height: 38px;
+  position: fixed; right: 10px; bottom: 120px; z-index: 3400; width: 38px; height: 38px;
   display: grid; place-items: center; cursor: pointer; user-select: none; touch-action: none;
   filter: drop-shadow(0 0 5px rgba(77, 232, 255, 0.75));
 }
@@ -38,12 +37,18 @@
 }
 @keyframes svs-in { from { transform: translateY(14px); opacity: 0; } }
 .svs-frame {
-  position: absolute; inset: 0; background: linear-gradient(180deg, #8ff3ff, var(--cy2) 60%, #7fe9ff);
+  position: absolute; inset: 0; opacity: var(--svs-op, 1); background: linear-gradient(180deg, #8ff3ff, var(--cy2) 60%, #7fe9ff);
   clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, var(--c2) 100%, 0 calc(100% - var(--c2)));
 }
 .svs-inner {
-  position: absolute; inset: 1.5px; display: flex; flex-direction: column; overflow: hidden;
-  background: linear-gradient(180deg, rgba(24, 14, 34, 0.9) 0%, rgba(14, 18, 38, 0.9) 55%, rgba(10, 40, 58, 0.84) 100%);
+  position: absolute; inset: 1.5px; display: flex; flex-direction: column; overflow: hidden; opacity: var(--svs-op, 1);
+  background: linear-gradient(180deg, rgba(24, 14, 34, 0.8) 0%, rgba(14, 18, 38, 0.78) 55%, rgba(10, 40, 58, 0.72) 100%);
+  clip-path: polygon(0 0, calc(100% - var(--c) + 1px) 0, 100% calc(var(--c) - 1px), 100% 100%, calc(var(--c2) - 1px) 100%, 0 calc(100% - var(--c2) + 1px));
+}
+/* Backdrop blur lives on its own sibling layer: an ancestor with opacity/filter would stop it from seeing the page behind. */
+.svs-blur {
+  position: absolute; inset: 1.5px; pointer-events: none;
+  -webkit-backdrop-filter: blur(var(--svs-blur, 0px)); backdrop-filter: blur(var(--svs-blur, 0px));
   clip-path: polygon(0 0, calc(100% - var(--c) + 1px) 0, 100% calc(var(--c) - 1px), 100% 100%, calc(var(--c2) - 1px) 100%, 0 calc(100% - var(--c2) + 1px));
 }
 .svs-inner::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.6; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Ccircle cx='30' cy='28' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='41' cy='28' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='52' cy='28' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='30' cy='39' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='41' cy='39' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='52' cy='39' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='30' cy='50' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='41' cy='50' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='52' cy='50' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='30' cy='61' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='41' cy='61' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='52' cy='61' r='2.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='150' y='40' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='160' y='40' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='170' y='40' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='180' y='40' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='150' y='50' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='160' y='50' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='170' y='50' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='180' y='50' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='150' y='60' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='160' y='60' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='170' y='60' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='180' y='60' width='3.4' height='3.4' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='70' cy='150' r='2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='80' cy='150' r='2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='90' cy='150' r='2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='70' cy='160' r='2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='80' cy='160' r='2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='90' cy='160' r='2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='70' cy='170' r='2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='80' cy='170' r='2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Ccircle cx='90' cy='170' r='2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='160' y='190' width='3.2' height='3.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='169' y='199' width='3.2' height='3.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='178' y='190' width='3.2' height='3.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='187' y='199' width='3.2' height='3.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='196' y='190' width='3.2' height='3.2' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M90 247.4L92.6 250L90 252.6L87.4 250Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M46 106.4L48.6 109L46 111.6L43.4 109Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M174 17.4L176.6 20L174 22.6L171.4 20Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M26 215.4L28.6 218L26 220.6L23.4 218Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M145 29.4L147.6 32L145 34.6L142.4 32Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M101 154.4L103.6 157L101 159.6L98.4 157Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M22 237.4L24.6 240L22 242.6L19.4 240Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M137 59.4L139.6 62L137 64.6L134.4 62Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M17 27.4L19.6 30L17 32.6L14.4 30Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M119 112.4L121.6 115L119 117.6L116.4 115Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M25 66.4L27.6 69L25 71.6L22.4 69Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M31 146.4L33.6 149L31 151.6L28.4 149Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M116 20.4L118.6 23L116 25.6L113.4 23Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M219 149.4L221.6 152L219 154.6L216.4 152Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M39 247.4L41.6 250L39 252.6L36.4 250Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Cpath d='M65 166.4L67.6 169L65 171.6L62.4 169Z' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='164' y='153' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='246' y='19' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='151' y='153' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='105' y='16' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='253' y='60' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='15' y='146' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='223' y='38' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='78' y='111' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='40' y='142' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='34' y='150' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='82' y='147' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='212' y='178' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='50' y='30' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='152' y='150' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='167' y='52' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='99' y='28' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='144' y='186' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='20' y='148' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='19' y='162' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='56' y='131' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='178' y='140' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='113' y='202' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='84' y='123' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='153' y='240' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='120' y='96' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='80' y='67' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='207' y='50' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='182' y='203' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='66' y='24' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='151' y='80' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='138' y='130' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='228' y='91' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='190' y='118' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='77' y='159' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='254' y='22' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='34' y='135' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='111' y='46' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='197' y='91' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='42' y='242' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='129' y='111' width='1.6' height='1.6' fill='%23e4e7ff'/%3E%3Crect x='20' y='181' width='3' height='3' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='29' y='205' width='3' height='3' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='152' y='156' width='3' height='3' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='212' y='234' width='3' height='3' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='219' y='90' width='3' height='3' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='97' y='187' width='3' height='3' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3Crect x='99' y='162' width='3' height='3' fill='none' stroke='%23cfd4ff' stroke-width='1'/%3E%3C/svg%3E"); background-size: 260px 260px; }
@@ -52,8 +57,7 @@
 
 /* ═════════ header, tabs, footer ═════════ */
 .svs-head { display: flex; align-items: center; gap: 8px; padding: 14px 12px 8px 16px; }
-.svs-head .svs-cn { font-size: 12px; opacity: 0.9; align-self: flex-start; margin-top: -2px; }
-#svs_title { font: 700 21px/1 "Trebuchet MS", "Segoe UI", system-ui, sans-serif; letter-spacing: 0.07em; text-transform: lowercase; color: var(--ice); text-shadow: var(--glow); }
+#svs_title { font: 700 21px/1 "Trebuchet MS", "Segoe UI", system-ui, sans-serif; letter-spacing: 0.05em; color: var(--ice); text-shadow: var(--glow); }
 #svs_pts { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--ice); background: rgba(77, 232, 255, 0.14); box-shadow: inset 0 0 0 1px rgba(77, 232, 255, 0.5); clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px)); }
 #svs_pts:empty { display: none; }
 .svs-spacer { flex: 1; }
@@ -75,7 +79,7 @@
 .svs-foot::before { content: ""; position: absolute; left: 14px; top: -2px; width: 54px; height: 3px; background: var(--cy); box-shadow: var(--glow); }
 .svs-led { width: 7px; height: 7px; border-radius: 50%; background: var(--cy); box-shadow: 0 0 8px var(--cy); animation: svs-blink 2.4s ease-in-out infinite; }
 @keyframes svs-blink { 50% { opacity: 0.35; } }
-.svs-cn.grow { flex: 1; text-align: center; font-size: 13px; letter-spacing: 0.2em; text-shadow: var(--glow); }
+.svs-foot-c { flex: 1; text-align: center; font-size: 12.5px; letter-spacing: 0.12em; color: var(--ice); text-shadow: var(--glow); }
 .svs-foot-w { max-width: 34%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ═════════ controls ═════════ */
@@ -145,6 +149,11 @@
 /* ═════════ status ═════════ */
 .svs-hero { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--glass); border: 1px solid var(--line); border-left: 2px solid var(--cy); }
 .svs-badge { flex: none; width: 44px; height: 44px; display: grid; place-items: center; font: 800 22px/1 "Trebuchet MS", system-ui, sans-serif; color: var(--ice); text-shadow: var(--glow); background: rgba(77, 232, 255, 0.12); box-shadow: inset 0 0 0 1px var(--cy); clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px)); }
+.svs-badge { position: relative; overflow: hidden; }
+.svs-badge img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.svs-badge.sm { width: 42px; height: 42px; font-size: 18px; }
+.svs-avrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.svs-pav { width: 20px; height: 20px; flex: none; object-fit: cover; clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px)); }
 .svs-herotxt { display: flex; flex-direction: column; min-width: 0; }
 .svs-herotxt small { color: var(--dim); font-size: 12px; }
 .svs-herotxt b { font-size: 17px; color: var(--ice); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -231,7 +240,8 @@
 /* ═════════ in-chat popup ═════════ */
 .svs-chatpop {
   display: block; position: relative; margin: 8px 0; color: var(--txt); font-size: 13.5px; line-height: 1.45; text-align: left; overflow: hidden;
-  background: linear-gradient(180deg, rgba(24, 14, 34, 0.9), rgba(12, 32, 50, 0.86));
+  background: linear-gradient(180deg, rgba(24, 14, 34, 0.8), rgba(12, 32, 50, 0.76));
+  -webkit-backdrop-filter: blur(var(--svs-blur, 0px)); backdrop-filter: blur(var(--svs-blur, 0px));
   border: 1px solid rgba(77, 232, 255, 0.6); border-left-width: 3px; border-radius: 2px;
   box-shadow: 0 0 12px rgba(77, 232, 255, 0.28), inset 0 0 22px rgba(77, 232, 255, 0.06);
 }
@@ -239,8 +249,7 @@
 .svs-chatpop > * { position: relative; }
 .svs-chatpop > summary { display: flex; align-items: center; gap: 8px; padding: 7px 10px; cursor: pointer; list-style: none; user-select: none; }
 .svs-chatpop > summary::-webkit-details-marker { display: none; }
-.svs-chatpop > summary .svs-cn { font-size: 12px; }
-.svs-chatpop > summary b { color: var(--ice); text-shadow: var(--glow); letter-spacing: 0.06em; text-transform: lowercase; font-size: 14px; }
+.svs-chatpop > summary b { color: var(--ice); text-shadow: var(--glow); letter-spacing: 0.04em; font-size: 14px; }
 .svs-ps-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.9; border: 0 !important; background: none !important; padding: 0 !important; }
 .svs-chatpop[open] .svs-ps-text { opacity: 0.4; }
 .svs-chev { color: var(--dim); transition: transform 0.18s; }
@@ -272,3 +281,28 @@
 #svs_panel, #svs_panel button, #svs_panel summary, #svs_panel label, .svs-chatpop > summary { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #svs_panel button, #svs_panel summary { cursor: pointer; }
 #svs_panel button > *, #svs_panel summary > i { pointer-events: none; }
+
+/* ═════════ rounded corners (optional) ═════════ */
+body.svs-round #svs_panel { --r: 20px; border-radius: var(--r); }
+body.svs-round .svs-frame { clip-path: inset(0 round var(--r)); }
+body.svs-round .svs-inner, body.svs-round .svs-blur { clip-path: inset(0 round calc(var(--r) - 1px)); }
+body.svs-round .svs-inner::after { clip-path: inset(0 round calc(var(--r) - 8px)); }
+body.svs-round .svs-btn, body.svs-round .svs-chip-btn, body.svs-round .svs-seg button, body.svs-round #svs_pts,
+body.svs-round .svs-delta, body.svs-round .svs-chip, body.svs-round .svs-badge, body.svs-round .svs-pav,
+body.svs-round .svs-switch i { clip-path: none; border-radius: 10px; }
+body.svs-round .svs-switch i { border-radius: 99px; }
+body.svs-round .svs-switch i::after { border-radius: 50%; }
+body.svs-round #svs_pts, body.svs-round .svs-delta, body.svs-round .svs-chip, body.svs-round .svs-count { border-radius: 99px; }
+body.svs-round .svs-ff { clip-path: none; border-radius: 13px; }
+body.svs-round #svs_fab span { clip-path: none; border-radius: 12px; }
+body.svs-round .svs-card, body.svs-round .svs-note, body.svs-round .svs-hero, body.svs-round .svs-group,
+body.svs-round .svs-sec, body.svs-round .svs-empty, body.svs-round .svs-wallet, body.svs-round .svs-dg { border-radius: 12px; }
+body.svs-round #svs_panel input[type="text"], body.svs-round #svs_panel input[type="number"],
+body.svs-round #svs_panel textarea, body.svs-round #svs_panel select { border-radius: 9px; }
+body.svs-round .svs-chatpop { border-radius: 14px; }
+@media (max-width: 640px) {
+  body.svs-round #svs_panel { border-radius: var(--r) var(--r) 0 0; }
+  body.svs-round .svs-frame { clip-path: inset(0 round var(--r) var(--r) 0 0); }
+  body.svs-round .svs-inner, body.svs-round .svs-blur { clip-path: inset(0 round calc(var(--r) - 1px) calc(var(--r) - 1px) 0 0); }
+  body.svs-round .svs-inner::after { clip-path: inset(0 round calc(var(--r) - 8px) calc(var(--r) - 8px) 0 0); }
+}

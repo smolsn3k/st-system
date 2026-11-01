@@ -55,7 +55,10 @@ en: {
   welcome_oc: 'Ding! Binding complete. Host is inserted as the original character "{char}". Starting balance: {pts} {pn}. Stay true to this character and the world.',
   sec_chat: 'In-chat popup', s_chatpop: 'Show System popups in the chat', s_chatplace: 'Popup placement', place_top: 'Top of the message',
   place_middle: 'Middle of the message', place_bottom: 'Bottom of the message', s_chattarget: 'Attach popup to', target_reply: 'Character reply', target_mine: 'My message',
-  s_chatopen: 'Expanded by default', profiles_label: 'Profiles'
+  s_chatopen: 'Expanded by default', profiles_label: 'Profiles',
+  sec_look: 'Appearance', s_blur: 'Background blur', s_round: 'Rounded corners', foot_active: 'System activated',
+  sec_avatar: 'Avatar', s_avatar: 'Avatar source', av_persona: 'My persona (active chat)', av_char: 'Chat character', av_custom: 'Custom image',
+  av_choose: 'Choose image', av_remove: 'Remove', fab_reset_done: 'Floating button reset.', av_fail: 'Could not load that image.'
 },
 ru: {
   title: 'Система', tab_status: 'Статус', tab_missions: 'Задания', tab_shop: 'Магазин', tab_world: 'Мир', tab_settings: 'Настройки',
@@ -104,7 +107,10 @@ ru: {
   welcome_oc: 'Дзынь! Привязка завершена. Хост внедрён как оригинальный персонаж «{char}». Стартовый баланс: {pts} {pn}. Оставайтесь верны этому персонажу и миру.',
   sec_chat: 'Окно в чате', s_chatpop: 'Показывать окна Системы в чате', s_chatplace: 'Расположение окна', place_top: 'Сверху сообщения',
   place_middle: 'В середине сообщения', place_bottom: 'Снизу сообщения', s_chattarget: 'Прикреплять окно к', target_reply: 'Ответу персонажа', target_mine: 'Моему сообщению',
-  s_chatopen: 'Развёрнуто по умолчанию', profiles_label: 'Профили'
+  s_chatopen: 'Развёрнуто по умолчанию', profiles_label: 'Профили',
+  sec_look: 'Оформление', s_blur: 'Размытие фона', s_round: 'Скруглённые углы', foot_active: 'Система активирована',
+  sec_avatar: 'Аватар', s_avatar: 'Источник аватара', av_persona: 'Моя персона (активный чат)', av_char: 'Персонаж чата', av_custom: 'Своё изображение',
+  av_choose: 'Выбрать изображение', av_remove: 'Удалить', fab_reset_done: 'Плавающая кнопка сброшена.', av_fail: 'Не удалось загрузить изображение.'
 }
 };
 function t(k, v) {
@@ -115,7 +121,7 @@ function t(k, v) {
 }
 
 /* ------------------------------------------------------------ debug store */
-const VERSION = '1.2.0';
+const VERSION = '1.3.0';
 const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
 function logErr(where, e) {
   const msg = (e && (e.stack || e.message)) || String(e);
@@ -129,7 +135,7 @@ const hit = (name) => { dbg.events[name] = { n: (dbg.events[name]?.n || 0) + 1, 
 const DEFAULTS = {
   enabled: true, lang: 'en', outLang: 'ui', opacity: 0.95, profileId: '', autoEval: true,
   ctxMessages: 6, strict: 'normal', showFab: true, toasts: true, open: false, tab: 'status',
-  fabPos: null, fabSize: 38, chatPopup: true, chatPlace: 'bottom', chatTarget: 'reply', chatOpen: false, worlds: []
+  fabPos: null, fabSize: 38, chatPopup: true, chatPlace: 'bottom', chatTarget: 'reply', chatOpen: false, blur: 8, rounded: false, avatarMode: 'persona', avatarCustom: '', worlds: []
 };
 function S() {
   const { extensionSettings } = ctx();
@@ -546,7 +552,7 @@ function viewStatus() {
   const nAct = cs.missions.filter((m) => m.status === 'active').length;
   return `
   ${chipsHtml()}<div class="svs-hero">
-    <div class="svs-badge">${esc((w.character || w.name || '?').trim().charAt(0).toUpperCase())}</div>
+    <div class="svs-badge"><b>${esc((w.character || w.name || '?').trim().charAt(0).toUpperCase())}</b>${avatarUrl() ? `<img src="${esc(avatarUrl())}" alt="" onerror="this.style.display='none'">` : ''}</div>
     <div class="svs-herotxt"><small>${t(w.mode === 'oc' ? 'bound_to_oc' : 'bound_to')}</small><b>${esc(w.character || w.name)}</b><small>${esc(w.fandom)}</small></div>
   </div>
   <div class="svs-dash">
@@ -644,12 +650,30 @@ function viewSettings() {
   const popt = `<option value="">${t('profile_current')}</option>` + profiles.map((p) => `<option value="${esc(p.id)}" ${p.id === s.profileId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
   const sel = (id, val, items) => `<select id="${id}">${items.map(([v, l]) => `<option value="${v}" ${v === val ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
   const sw = (id, v, l) => `<label class="svs-switch"><input type="checkbox" id="${id}" ${v ? 'checked' : ''}><i></i><span>${l}</span></label>`;
+  const av = avatarUrl();
   return `
   ${sw('svs_en', s.enabled, t('s_enabled'))}
   <div class="svs-group">
     <label>${t('s_lang')}${sel('svs_lang', s.lang, [['en', 'English'], ['ru', 'Русский']])}</label>
     <label>${t('s_outlang')}${sel('svs_outlang', s.outLang, [['ui', t('out_ui')], ['en', 'English'], ['ru', 'Русский'], ['chat', t('out_chat')]])}</label>
+  </div>
+  <div class="svs-group">
+    <div class="svs-gh"><i class="fa-solid fa-palette"></i> ${t('sec_look')}</div>
     <label>${t('s_opacity')} <b class="svs-opval">${Math.round(s.opacity * 100)}%</b>${opSlider()}</label>
+    <label>${t('s_blur')} <b class="svs-blurval">${s.blur}px</b><input type="range" id="svs_blur" min="0" max="30" value="${s.blur}"></label>
+    ${sw('svs_round', s.rounded, t('s_round'))}
+    ${sw('svs_fabchk', s.showFab, t('s_fab'))}
+    <label>${t('s_fabsize')} <b class="svs-fabval">${s.fabSize}px</b><input type="range" id="svs_fabsize" min="28" max="64" value="${s.fabSize}"></label>
+  </div>
+  <div class="svs-group">
+    <div class="svs-gh"><i class="fa-regular fa-circle-user"></i> ${t('sec_avatar')}</div>
+    <label>${t('s_avatar')}${sel('svs_avmode', s.avatarMode, [['persona', t('av_persona')], ['character', t('av_char')], ['custom', t('av_custom')]])}</label>
+    <div class="svs-avrow">
+      <div class="svs-badge sm"><b>?</b>${av ? `<img src="${esc(av)}" alt="" onerror="this.style.display='none'">` : ''}</div>
+      <button class="svs-btn sm" data-act="avatar-pick"><i class="fa-solid fa-image"></i> ${t('av_choose')}</button>
+      <button class="svs-btn sm ghost svs-danger" data-act="avatar-clear" ${s.avatarCustom ? '' : 'disabled'}><i class="fa-regular fa-trash-can"></i> ${t('av_remove')}</button>
+    </div>
+    <input type="file" id="svs_avatar_file" accept="image/*" hidden>
   </div>
   <div class="svs-group">
     <label>${t('s_profile')}<span class="svs-inline"><select id="svs_profile">${popt}</select><button class="svs-btn icon sm" data-act="profiles" title="${t('profile_reload')}"><i class="fa-solid fa-rotate"></i></button></span></label>
@@ -660,8 +684,6 @@ function viewSettings() {
     ${sw('svs_auto', s.autoEval, t('s_auto'))}
     <label>${t('s_ctx')}<input type="number" id="svs_ctxn" min="2" max="30" value="${s.ctxMessages}"></label>
     <label>${t('s_strict')}${sel('svs_strict', s.strict, [['gentle', t('gentle')], ['normal', t('normal')], ['harsh', t('harsh')]])}</label>
-    ${sw('svs_fabchk', s.showFab, t('s_fab'))}
-    <label>${t('s_fabsize')} <b class="svs-fabval">${s.fabSize}px</b><input type="range" id="svs_fabsize" min="28" max="64" value="${s.fabSize}"></label>
     ${sw('svs_toast', s.toasts, t('s_toast'))}
   </div>
   <div class="svs-group">
@@ -714,6 +736,10 @@ async function runDiag() {
     add($('#svs_wand').length ? true : 'warn', 'Wand menu entry', $('#svs_wand').length ? 'present' : 'missing');
     const hb = getComputedStyle(document.body), hh = getComputedStyle(document.documentElement), pc = panel ? getComputedStyle(panel) : null;
     add(true, 'Layout', `${geom()}; dpr ${devicePixelRatio}; popover ${typeof panel?.showPopover === 'function' ? 'supported' : 'unsupported'}; panel position ${pc?.position}, h ${pc?.height}; body transform ${hb.transform}, zoom ${hb.zoom}/${hh.zoom}; panel parent ${panel?.parentElement?.tagName}`);
+    const fr = fab ? fab.getBoundingClientRect() : null;
+    const covering = fr ? document.elementFromPoint(fr.left + fr.width / 2, fr.top + fr.height / 2) : null;
+    add(fab && covering && (fab === covering || fab.contains(covering)) ? true : fab && getComputedStyle(fab).display === 'none' ? 'warn' : false, 'Floating button hit-test', fab ? (getComputedStyle(fab).display === 'none' ? 'hidden by setting' : (covering && (fab === covering || fab.contains(covering)) ? 'visible and tappable' : 'covered by ' + (covering ? covering.tagName + (covering.id ? '#' + covering.id : '') : 'nothing/off-screen'))) + (dbg.fabFix ? ' · ' + dbg.fabFix : '') : 'missing');
+    add(true, 'Look', `blur ${S().blur}px (backdrop-filter ${typeof CSS !== 'undefined' && CSS.supports && CSS.supports('backdrop-filter', 'blur(2px)') ? 'supported' : 'NOT supported'}), rounded ${S().rounded}, avatar ${S().avatarMode} → ${avatarUrl() ? 'found' : 'none'}`);
     const h = hitTest();
     add(h.ok === true ? true : h.ok === null ? 'warn' : false, 'Hit-test (is the panel tappable?)', h.info + (dbg.hitFix ? ' · ' + dbg.hitFix : ''));
     const ev = dbg.events, f = (k) => (ev[k] ? ev[k].n : 0);
@@ -823,7 +849,7 @@ function popHtml(list) {
     const d = e.delta ? `<span class="svs-delta ${e.delta > 0 ? 'pos' : 'neg'}">${e.delta > 0 ? '+' : ''}${e.delta}</span>` : '';
     return `<div class="svs-pe k-${kk}"><i class="fa-solid ${ICON[kk]}"></i><span class="svs-pt">【 ${esc(e.text)} 】</span>${d}</div>`;
   }).join('');
-  return `<summary><span class="svs-cn">系统:</span><b>${esc(t('title'))}</b><span class="svs-ps-text k-${k}">${esc(last.text)}</span>${pill}<i class="fa-solid fa-chevron-down svs-chev"></i></summary><div class="svs-pbody">${rows}</div>`;
+  return `<summary>${popAvatar()}<b>${esc(t('title'))}</b><span class="svs-ps-text k-${k}">${esc(last.text)}</span>${pill}<i class="fa-solid fa-chevron-down svs-chev"></i></summary><div class="svs-pbody">${rows}</div>`;
 }
 function injectAll() {
   try {
@@ -863,6 +889,77 @@ function syncTop(el, visible) {
     else if (!visible && open) el.hidePopover();
   } catch (e) { logErr('popover', e); }
 }
+/* Opacity is applied to the frame + glass only (never to #svs_panel itself), so backdrop blur keeps seeing the page behind. */
+function applyLook() {
+  const s = S(), p = document.getElementById('svs_panel');
+  if (p) { p.style.setProperty('--svs-op', String(s.opacity)); p.style.setProperty('--svs-blur', clamp(Number(s.blur) || 0, 0, 30) + 'px'); }
+  document.documentElement.style.setProperty('--svs-blur', clamp(Number(s.blur) || 0, 0, 30) + 'px');
+  document.body.classList.toggle('svs-round', !!s.rounded);
+  const f = document.getElementById('svs_fab'); if (f) f.style.opacity = String(Math.max(0.5, s.opacity));
+}
+function avatarUrl() {
+  const s = S(), c = ctx();
+  try {
+    if (s.avatarMode === 'custom') return s.avatarCustom || '';
+    const last = (sel) => { const a = [...document.querySelectorAll(sel)]; return a.length ? a[a.length - 1].src : ''; };
+    if (s.avatarMode === 'character') {
+      const u = last('#chat .mes:not([is_user="true"]) .avatar img'); if (u) return u;
+      const ch = c.characters && c.characters[c.characterId];
+      if (ch && ch.avatar && ch.avatar !== 'none') return c.getThumbnailUrl ? c.getThumbnailUrl('avatar', ch.avatar) : `/thumbnail?type=avatar&file=${encodeURIComponent(ch.avatar)}`;
+      return '';
+    }
+    const u = last('#chat .mes[is_user="true"] .avatar img'); if (u) return u;
+    const sel = document.querySelector('#user_avatar_block .avatar-container.selected img, #user_avatar_block .avatar.selected img');
+    return sel ? sel.src : '';
+  } catch (e) { return ''; }
+}
+const popAvatar = () => { const u = avatarUrl(); return u ? `<img class="svs-pav" src="${esc(u)}" alt="" onerror="this.style.display='none'">` : ''; };
+async function loadAvatarFile(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const sz = 160, cv = document.createElement('canvas'); cv.width = cv.height = sz;
+    const m = Math.min(img.width, img.height);
+    cv.getContext('2d').drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, sz, sz);
+    S().avatarCustom = cv.toDataURL('image/webp', 0.85); S().avatarMode = 'custom';
+    save(); render();
+  } catch (e) { logErr('avatar', e); window.toastr?.error(t('av_fail')); }
+  finally { URL.revokeObjectURL(url); }
+}
+
+/* ---- floating button: always placed in explicit pixels inside the visible screen ---- */
+function placeFab() {
+  const f = document.getElementById('svs_fab'); if (!f) return;
+  const s = S(), vv = window.visualViewport;
+  const W = Math.round(vv?.width || innerWidth), H = Math.round(vv?.height || innerHeight);
+  const ox = vv?.offsetLeft || 0, oy = vv?.offsetTop || 0;
+  const z = f.offsetWidth || clamp(Number(s.fabSize) || 38, 28, 64);
+  let left = s.fabPos ? parseFloat(s.fabPos.left) : NaN, top = s.fabPos ? parseFloat(s.fabPos.top) : NaN;
+  if (!isFinite(left) || !isFinite(top)) { left = ox + W - z - 10; top = oy + H - z - (W <= 640 ? 150 : 120); }
+  left = clamp(left, ox, Math.max(ox, ox + W - z)); top = clamp(top, oy, Math.max(oy, oy + H - z));
+  Object.assign(f.style, { left: Math.round(left) + 'px', top: Math.round(top) + 'px', right: 'auto', bottom: 'auto' });
+}
+function renderFab() {
+  try {
+    const s = S(), show = !!(s.showFab && s.enabled);
+    $('#svs_fab').toggleClass('svs-hidden', !show).toggleClass('svs-nobind', !currentWorld());
+    applyFab();
+    if (show) placeFab();
+  } catch (e) { logErr('renderFab', e); }
+}
+/* If something sits on top of the button, lift the button above it. */
+function ensureFab() {
+  try {
+    const f = document.getElementById('svs_fab');
+    if (!f || f.classList.contains('svs-hidden')) return;
+    const r = f.getBoundingClientRect();
+    const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    if (top && !f.contains(top) && top !== f) {
+      f.style.zIndex = '2147483000';
+      dbg.fabFix = `button was covered by <${top.tagName.toLowerCase()}${top.id ? '#' + top.id : ''}>; z-index raised`;
+    }
+  } catch (e) { logErr('ensureFab', e); }
+}
 function applyFab() {
   const f = document.getElementById('svs_fab'); if (!f) return;
   const z = clamp(Number(S().fabSize) || 38, 28, 64);
@@ -899,12 +996,14 @@ function layoutPanel() {
 function render() {
   try {
     const s = S();
+    renderFab();
+    applyLook();
     if (!$('#svs_panel').length) return;
     const tabs = ['status', 'missions', 'shop', 'world', 'settings'];
     $('#svs_tabs').html(tabs.map((k) => `<button class="svs-tab ${s.tab === k ? 'on' : ''}" data-act="tab" data-tab="${k}" title="${t('tab_' + k)}"><i class="fa-solid ${TAB_ICON[k]}"></i><span>${t('tab_' + k)}</span></button>`).join(''));
     $('#svs_title').text(t('title'));
     const cs = CS(), w = currentWorld();
-    $('#svs_foot').html(`<span class="svs-led"></span><span>${t('online')}</span><span class="svs-cn grow">系统初步激活</span><span class="svs-foot-w">${w ? esc(w.name) : t('foot_wait')}</span>`);
+    $('#svs_foot').html(`<span class="svs-led"></span><span>${t('online')}</span><span class="svs-foot-c">${t('foot_active')}</span><span class="svs-foot-w">${w ? esc(w.name) : t('foot_wait')}</span>`);
     $('#svs_pts').html(w && cs ? `<i class="fa-solid fa-coins"></i> ${cs.points}` : '');
     const views = { status: viewStatus, missions: viewMissions, shop: viewShop, world: viewWorld, settings: viewSettings, diag: viewDiag };
     const body = document.getElementById('svs_body');
@@ -914,10 +1013,8 @@ function render() {
     $('#svs_diagbtn').toggleClass('on', s.tab === 'diag');
     const showPanel = s.open && (s.enabled || s.tab === 'diag'), showFab = s.showFab && s.enabled;
     $('#svs_panel').toggleClass('svs-hidden', !showPanel);
-    $('#svs_fab').toggleClass('svs-hidden', !showFab).toggleClass('svs-nobind', !w);
     if (showPanel) layoutPanel();
     applyFab();
-    $('#svs_panel,#svs_fab').css('opacity', s.opacity);
     scheduleInject();
   } catch (e) { logErr('render', e); }
 }
@@ -975,11 +1072,14 @@ function ensureReachable() {
   return h;
 }
 function resetFab() {
-  S().fabPos = null; save();
-  $('#svs_fab').css({ left: '', top: '', right: '', bottom: '' });
-  render();
+  const s = S();
+  s.fabPos = null; s.showFab = true; s.fabSize = 38;
+  if (s.opacity < 0.5) s.opacity = 0.95;
+  const f = document.getElementById('svs_fab');
+  if (f) { f.style.zIndex = ''; f.style.left = ''; f.style.top = ''; }
+  save(); render(); ensureFab();
+  window.toastr?.success(t('fab_reset_done'));
 }
-
 function makeDraggable(el, onTap) {
   let down = false, moved = false, sx, sy, ox, oy;
   el.addEventListener('pointerdown', (e) => {
@@ -1012,10 +1112,11 @@ function buildUI() {
     $('body').append(`
       <div id="svs_fab" class="svs-hidden" title="System"><i class="svs-ff"></i><span>S</span></div>
       <div id="svs_panel" class="svs-hidden" role="dialog" aria-label="System">
+        <div class="svs-blur"></div>
         <div class="svs-frame"></div>
         <div class="svs-inner">
         <div class="svs-head">
-          <span class="svs-cn">系统:</span><span id="svs_title"></span><span id="svs_pts"></span>
+          <span id="svs_title"></span><span id="svs_pts"></span>
           <span class="svs-spacer"></span>
           <span class="svs-oprow" title="Opacity"><i class="fa-regular fa-eye"></i>${opSlider()}</span>
           <button id="svs_diagbtn" class="svs-x" data-act="diag-toggle" aria-label="Diagnostics"><i class="fa-solid fa-stethoscope"></i></button>
@@ -1098,6 +1199,8 @@ function buildUI() {
           case 'refresh': render(); break;
           case 'profiles': render(); window.toastr?.info(t('profile_reloaded', { n: getProfiles().length })); break;
           case 'reset-fab': resetFab(); break;
+          case 'avatar-pick': document.getElementById('svs_avatar_file')?.click(); break;
+          case 'avatar-clear': st.avatarCustom = ''; if (st.avatarMode === 'custom') st.avatarMode = 'persona'; save(); render(); break;
           case 'diag-run': runDiag(); break;
           case 'diag-copy': copyText(diagText()); break;
         }
@@ -1135,6 +1238,8 @@ function buildUI() {
       svs_strict: (el) => { S().strict = el.value; },
       svs_fabchk: (el) => { S().showFab = el.checked; },
       svs_toast: (el) => { S().toasts = el.checked; },
+      svs_round: (el) => { S().rounded = el.checked; },
+      svs_avmode: (el) => { S().avatarMode = el.value; },
       svs_chatpop: (el) => { S().chatPopup = el.checked; },
       svs_chatplace: (el) => { S().chatPlace = el.value; },
       svs_chattarget: (el) => { S().chatTarget = el.value; },
@@ -1147,12 +1252,14 @@ function buildUI() {
         S().opacity = v;
         document.querySelectorAll('.svs-op').forEach((x) => { x.value = Math.round(v * 100); });
         document.querySelectorAll('.svs-opval').forEach((x) => { x.textContent = Math.round(v * 100) + '%'; });
-        document.getElementById('svs_panel').style.opacity = v;
-        document.getElementById('svs_fab').style.opacity = v; save();
+        applyLook(); save();
       } else if (el.dataset && el.dataset.field) {
         const w = currentWorld(); if (w) { w[el.dataset.field] = el.value; save(); }
+      } else if (el.id === 'svs_blur') {
+        S().blur = Number(el.value); applyLook(); save();
+        const lab = document.querySelector('.svs-blurval'); if (lab) lab.textContent = el.value + 'px';
       } else if (el.id === 'svs_fabsize') {
-        S().fabSize = Number(el.value); applyFab(); save();
+        S().fabSize = Number(el.value); applyFab(); placeFab(); save();
         const lab = document.querySelector('.svs-fabval'); if (lab) lab.textContent = el.value + 'px';
       } else if (el.id === 'svs_ask') askDraft = el.value;
     });
@@ -1161,12 +1268,13 @@ function buildUI() {
       if (el.dataset && el.dataset.field) { const w = currentWorld(); if (w) { w[el.dataset.field] = el.value; save(); } return; }
       if (el.id === 'svs_over') { overwrite = el.checked; return; }
       if (el.id === 'svs_world') { bindWorld(el.value); return; }
+      if (el.id === 'svs_avatar_file') { const f = el.files[0]; if (f) await loadAvatarFile(f); el.value = ''; return; }
       if (el.id === 'svs_file') { const f = el.files[0]; if (f) importWorlds(await f.text()); el.value = ''; return; }
       if (settingsMap[el.id]) { settingsMap[el.id](el); save(); render(); }
     });
     panelEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'svs_ask') askSystem(); });
 
-    const relayout = () => { if (!document.getElementById('svs_panel').classList.contains('svs-hidden')) layoutPanel(); };
+    const relayout = () => { placeFab(); if (!document.getElementById('svs_panel').classList.contains('svs-hidden')) layoutPanel(); };
     window.addEventListener('resize', relayout);
     window.addEventListener('orientationchange', () => setTimeout(relayout, 200));
     if (window.visualViewport) { window.visualViewport.addEventListener('resize', relayout); window.visualViewport.addEventListener('scroll', relayout); }
@@ -1211,6 +1319,7 @@ function init() {
     }
   } catch (e) { logErr('chat observer', e); }
   scheduleInject();
+  setTimeout(ensureFab, 700);
   console.log(`[System] v${VERSION} loaded`);
 }
 try { jQuery(init); } catch (e) { console.error('[System] fatal init error', e); }
