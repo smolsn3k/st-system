@@ -68,6 +68,7 @@ en: {
   death: '{pn} dropped to zero or below. Punishment executed: host "{char}" is erased and sent back. Connection terminated.',
   dead_title: 'Host terminated', dead_text: 'Your {pn} reached zero and the System cut the link. Restart to be bound again with a fresh balance.',
   dead_restart: 'Restart (bind again)', st_risk: 'Expulsion risk', risk_on: 'ON', st_deaths: 'Terminations',
+  undo: 'Undo', m_completed: 'Completed: {title} (+{reward})', m_abandoned: 'Abandoned: {title}', m_reopened: 'Mission reopened: {title}',
   s_risk: 'Death / expulsion risk (points at zero or below end the run)',
   s_risk_hint: 'On: the System warns you at the start and when your balance is low. If points reach zero or below it erases you and locks the profile until you restart it. Off: points simply stop at zero.'
 },
@@ -131,6 +132,7 @@ ru: {
   death: '{pn} упали до нуля или ниже. Наказание приведено в исполнение: хост «{char}» стёрт и отправлен обратно. Соединение разорвано.',
   dead_title: 'Хост уничтожен', dead_text: 'Ваши {pn} достигли нуля, и Система разорвала связь. Перезапустите, чтобы привязаться заново с новым балансом.',
   dead_restart: 'Перезапуск (привязаться заново)', st_risk: 'Риск изгнания', risk_on: 'ВКЛ', st_deaths: 'Уничтожений',
+  undo: 'Отменить', m_completed: 'Выполнено: {title} (+{reward})', m_abandoned: 'Отказ от задания: {title}', m_reopened: 'Задание возвращено: {title}',
   s_risk: 'Риск смерти / изгнания (очки на нуле или ниже завершают прохождение)',
   s_risk_hint: 'Включено: Система предупреждает в начале и при низком балансе. Если очки достигают нуля или ниже, она стирает вас и блокирует профиль, пока вы его не перезапустите. Выключено: очки просто останавливаются на нуле.'
 }
@@ -143,7 +145,7 @@ function t(k, v) {
 }
 
 /* ------------------------------------------------------------ debug store */
-const VERSION = '1.5.0';
+const VERSION = '1.5.1';
 const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
 function logErr(where, e) {
   const msg = (e && (e.stack || e.message)) || String(e);
@@ -417,10 +419,33 @@ function addMission(cs, nm) {
 }
 function completeMission(m, silent) {
   const cs = CS(), w = currentWorld();
-  m.status = 'done';
+  m.status = 'done'; m.paid = m.reward;
   cs.points += m.reward;
-  pushLog(cs, { kind: 'reward', text: `${m.title}`, delta: m.reward });
+  pushLog(cs, { kind: 'reward', text: `${m.title}`, delta: m.reward, mid: m.id });
   if (silent) notify(m.title, m.reward);
+}
+/* Undo a finished/abandoned mission (accidental tap): reopens it and takes a paid reward back. */
+let undoBanner = null;
+function setUndo(m, kind) {
+  const stamp = Date.now();
+  undoBanner = { id: m.id, stamp, text: kind === 'done' ? t('m_completed', { title: m.title, reward: m.reward }) : t('m_abandoned', { title: m.title }) };
+  setTimeout(() => { if (undoBanner && undoBanner.stamp === stamp) { undoBanner = null; render(); } }, 12000);
+}
+function undoMission(id) {
+  const cs = CS();
+  if (!cs || cs.dead) return;
+  const m = cs.missions.find((x) => x.id === id);
+  if (!m || m.status === 'active') return;
+  if (m.status === 'done') {
+    cs.points -= (m.paid ?? m.reward);
+    if (!S().deathRisk) cs.points = Math.max(0, cs.points);
+    const i = cs.log.findIndex((e) => e.kind === 'reward' && e.mid === m.id);
+    if (i >= 0) cs.log.splice(i, 1);
+  }
+  m.status = 'active'; delete m.paid;
+  if (undoBanner && undoBanner.id === id) undoBanner = null;
+  saveChat(); render();
+  window.toastr?.info(t('m_reopened', { title: m.title }));
 }
 
 async function evaluate(manual) {
@@ -640,8 +665,12 @@ function viewMissions() {
       ${m.desc ? `<p>${esc(m.desc)}</p>` : ''}
       <div class="svs-cardrow">${a ? `<button class="svs-btn sm" data-act="m-done" data-id="${m.id}"><i class="fa-solid fa-check"></i> ${t('complete')}</button>
       <button class="svs-btn sm ghost svs-danger" data-act="m-drop" data-id="${m.id}">${t('abandon')}</button>`
-        : `<span class="svs-st-${m.status}"><i class="fa-solid ${m.status === 'done' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i></span>`}</div></div>`;
+        : `<span class="svs-st-${m.status}"><i class="fa-solid ${m.status === 'done' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i></span>
+      ${cs.dead ? '' : `<button class="svs-btn sm ghost" data-act="m-undo" data-id="${m.id}"><i class="fa-solid fa-rotate-left"></i> ${t('undo')}</button>`}`}</div></div>`;
+  const banner = undoBanner && !cs.dead && cs.missions.some((x) => x.id === undoBanner.id && x.status !== 'active')
+    ? `<div class="svs-undo"><span>${esc(undoBanner.text)}</span><button class="svs-btn sm" data-act="m-undo" data-id="${undoBanner.id}"><i class="fa-solid fa-rotate-left"></i> ${t('undo')}</button></div>` : '';
   return `
+  ${banner}
   <div class="svs-h">${t('m_active')} <span class="svs-count">${act.length}</span></div>
   ${act.map((m) => card(m, true)).join('') || `<div class="svs-empty"><i class="fa-regular fa-flag"></i><p>${t('no_missions')}</p></div>`}
   <button class="svs-btn svs-primary wide" data-act="m-ai" ${busy ? 'disabled' : ''}><i class="fa-solid ${busy ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'}"></i> ${busy ? t('thinking') : t('m_ai')}</button>
@@ -1250,8 +1279,9 @@ function buildUI() {
             const title = (document.getElementById('svs_mt')?.value || '').trim(); if (!title || !cs) break;
             addMission(cs, { title, desc: '', reward: document.getElementById('svs_mr')?.value || 50 }); saveChat(); render(); break;
           }
-          case 'm-done': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m) { completeMission(m); saveChat(); render(); } break; }
-          case 'm-drop': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m) { m.status = 'failed'; saveChat(); render(); } break; }
+          case 'm-done': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m && m.status === 'active') { completeMission(m); setUndo(m, 'done'); saveChat(); render(); } break; }
+          case 'm-drop': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m && m.status === 'active') { m.status = 'failed'; setUndo(m, 'failed'); saveChat(); render(); } break; }
+          case 'm-undo': undoMission(el.dataset.id); break;
           case 'buy': {
             const it = parseShop(w.shopText)[Number(el.dataset.i)]; if (!it) break;
             if (cs.points < it.cost) { window.toastr?.warning(t('not_enough')); break; }

@@ -329,3 +329,8 @@ body.svs-round .svs-chatpop { border-radius: 14px; }
 .svs-dead p { margin: 0; color: var(--txt); font-size: 13.5px; }
 body.svs-round .svs-dead { border-radius: 12px; }
 .svs-ring.low .svs-ringnum { color: var(--red); text-shadow: 0 0 8px rgba(255, 107, 138, 0.8); }
+
+/* ═════════ undo bar ═════════ */
+.svs-undo { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 8px 8px 12px; color: var(--ice); background: rgba(77, 232, 255, 0.12); border: 1px solid var(--cy); box-shadow: 0 0 12px rgba(77, 232, 255, 0.25); }
+.svs-undo span { min-width: 0; overflow-wrap: anywhere; font-size: 13.5px; }
+body.svs-round .svs-undo { border-radius: 12px; }
