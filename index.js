@@ -58,7 +58,18 @@ en: {
   s_chatopen: 'Expanded by default', profiles_label: 'Profiles',
   sec_look: 'Appearance', s_blur: 'Background blur', s_round: 'Rounded corners', foot_active: 'System activated',
   sec_avatar: 'Avatar', s_avatar: 'Avatar source', av_persona: 'My persona (active chat)', av_char: 'Chat character', av_custom: 'Custom image',
-  av_choose: 'Choose image', av_remove: 'Remove', fab_reset_done: 'Floating button reset.', av_fail: 'Could not load that image.'
+  av_choose: 'Choose image', av_remove: 'Remove', fab_reset_done: 'Floating button reset.', av_fail: 'Could not load that image.',
+  sec_thischat: 'This chat', s_chaton: 'System active in this chat', s_newoff: 'Start new chats switched off',
+  chat_off: 'The System is switched off in this chat. Nothing is evaluated and no popups are shown.', chat_enable: 'Switch on for this chat',
+  chat_disable: 'Switch off for this chat', foot_off: 'Off in this chat', no_chat: 'Open a chat first.',
+  toggled_on: 'System switched on for this chat.', toggled_off: 'System switched off for this chat.',
+  risk_warn: 'Warning: if your {pn} drop to zero or below, the System will erase you or send you back where you came from.',
+  risk_low: 'Low balance: {pts} {pn} left. At zero or below you will be erased.',
+  death: '{pn} dropped to zero or below. Punishment executed: host "{char}" is erased and sent back. Connection terminated.',
+  dead_title: 'Host terminated', dead_text: 'Your {pn} reached zero and the System cut the link. Restart to be bound again with a fresh balance.',
+  dead_restart: 'Restart (bind again)', st_risk: 'Expulsion risk', risk_on: 'ON', st_deaths: 'Terminations',
+  s_risk: 'Death / expulsion risk (points at zero or below end the run)',
+  s_risk_hint: 'On: the System warns you at the start and when your balance is low. If points reach zero or below it erases you and locks the profile until you restart it. Off: points simply stop at zero.'
 },
 ru: {
   title: 'Система', tab_status: 'Статус', tab_missions: 'Задания', tab_shop: 'Магазин', tab_world: 'Мир', tab_settings: 'Настройки',
@@ -110,7 +121,18 @@ ru: {
   s_chatopen: 'Развёрнуто по умолчанию', profiles_label: 'Профили',
   sec_look: 'Оформление', s_blur: 'Размытие фона', s_round: 'Скруглённые углы', foot_active: 'Система активирована',
   sec_avatar: 'Аватар', s_avatar: 'Источник аватара', av_persona: 'Моя персона (активный чат)', av_char: 'Персонаж чата', av_custom: 'Своё изображение',
-  av_choose: 'Выбрать изображение', av_remove: 'Удалить', fab_reset_done: 'Плавающая кнопка сброшена.', av_fail: 'Не удалось загрузить изображение.'
+  av_choose: 'Выбрать изображение', av_remove: 'Удалить', fab_reset_done: 'Плавающая кнопка сброшена.', av_fail: 'Не удалось загрузить изображение.',
+  sec_thischat: 'Этот чат', s_chaton: 'Система активна в этом чате', s_newoff: 'Новые чаты начинаются выключенными',
+  chat_off: 'Система выключена в этом чате. Ничего не оценивается, окна не показываются.', chat_enable: 'Включить в этом чате',
+  chat_disable: 'Выключить в этом чате', foot_off: 'Выключена в этом чате', no_chat: 'Сначала откройте чат.',
+  toggled_on: 'Система включена в этом чате.', toggled_off: 'Система выключена в этом чате.',
+  risk_warn: 'Предупреждение: если ваши {pn} упадут до нуля или ниже, Система сотрёт вас или отправит обратно.',
+  risk_low: 'Низкий баланс: осталось {pts} {pn}. При нуле или ниже вы будете стёрты.',
+  death: '{pn} упали до нуля или ниже. Наказание приведено в исполнение: хост «{char}» стёрт и отправлен обратно. Соединение разорвано.',
+  dead_title: 'Хост уничтожен', dead_text: 'Ваши {pn} достигли нуля, и Система разорвала связь. Перезапустите, чтобы привязаться заново с новым балансом.',
+  dead_restart: 'Перезапуск (привязаться заново)', st_risk: 'Риск изгнания', risk_on: 'ВКЛ', st_deaths: 'Уничтожений',
+  s_risk: 'Риск смерти / изгнания (очки на нуле или ниже завершают прохождение)',
+  s_risk_hint: 'Включено: Система предупреждает в начале и при низком балансе. Если очки достигают нуля или ниже, она стирает вас и блокирует профиль, пока вы его не перезапустите. Выключено: очки просто останавливаются на нуле.'
 }
 };
 function t(k, v) {
@@ -121,7 +143,7 @@ function t(k, v) {
 }
 
 /* ------------------------------------------------------------ debug store */
-const VERSION = '1.3.1';
+const VERSION = '1.5.0';
 const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
 function logErr(where, e) {
   const msg = (e && (e.stack || e.message)) || String(e);
@@ -135,7 +157,7 @@ const hit = (name) => { dbg.events[name] = { n: (dbg.events[name]?.n || 0) + 1, 
 const DEFAULTS = {
   enabled: true, lang: 'en', outLang: 'ui', opacity: 0.95, profileId: '', autoEval: true,
   ctxMessages: 6, strict: 'normal', showFab: true, toasts: true, open: false, tab: 'status',
-  fabPos: null, fabSize: 38, chatPopup: true, chatPlace: 'bottom', chatTarget: 'reply', chatOpen: false, blur: 8, rounded: false, avatarMode: 'persona', avatarCustom: '', worlds: []
+  fabPos: null, fabSize: 38, chatPopup: true, chatPlace: 'bottom', chatTarget: 'reply', chatOpen: false, blur: 8, rounded: false, avatarMode: 'persona', avatarCustom: '', newChatsOff: false, deathRisk: false, worlds: []
 };
 function S() {
   const { extensionSettings } = ctx();
@@ -152,13 +174,15 @@ function META() {
   const md = ctx().chatMetadata;
   if (!md) return null;
   let m = md[MODULE];
-  if (!m) m = md[MODULE] = { worldId: '', states: {} };
+  if (!m) m = md[MODULE] = { worldId: '', states: {}, off: !!S().newChatsOff };
   if (!m.states) { // migrate the old flat format
     const old = { points: m.points ?? 100, log: m.log || [], missions: m.missions || [], inventory: m.inventory || [], lastUserIdx: m.lastUserIdx ?? -1 };
     md[MODULE] = m = { worldId: m.worldId || '', states: m.worldId ? { [m.worldId]: old } : {} };
   }
   return m;
 }
+/* Per-chat switch: true when the System is switched off for the open chat (stored in that chat's own data). */
+const chatOff = () => { const m = META(); return !!(m && m.off); };
 /* Progress of the currently bound profile in this chat (null when none is bound). */
 function CS() {
   const m = META();
@@ -307,7 +331,7 @@ ${oc ? 'Original character persona, background & behaviour' : 'Character persona
 ${oc ? "The original character's own story & goals" : 'Original storyline / System goals'}: ${w.plot || 'n/a'}
 Your voice: ${w.systemVoice || t('default_voice')}. Notices are short (1-2 sentences), like 【 ... 】 system notices, but write the text WITHOUT the brackets.
 Scoring: ${strict}
-${langInstruction()}`;
+${S().deathRisk ? `Death/expulsion rule is ACTIVE: if the player's ${pn} fall to zero or below, the player is erased by the System / sent back. Make the stakes feel real and warn the player clearly when the balance is low.\n` : ''}${langInstruction()}`;
 }
 
 /* ---------------------------------------------------------------- state */
@@ -327,12 +351,17 @@ function notify(text, delta) {
     window.toastr.info(`【 ${text} 】${d}`, t('title'));
   }
 }
+function welcomeText(w, cs) {
+  let txt = t(w.mode === 'oc' ? 'welcome_oc' : 'welcome', { char: w.character || w.name, pts: cs.points, pn: w.pointName });
+  if (S().deathRisk) txt += ' ' + t('risk_warn', { pn: w.pointName });
+  return txt;
+}
 function bindWorld(id) {
   const m = META(); if (!m) return;
   m.worldId = S().worlds.some((x) => x.id === id) ? id : '';
   const w = currentWorld(), cs = CS();
   if (w && cs && cs.log.length === 0) {
-    pushLog(cs, { kind: 'info', text: t(w.mode === 'oc' ? 'welcome_oc' : 'welcome', { char: w.character || w.name, pts: cs.points, pn: w.pointName }) });
+    pushLog(cs, { kind: 'info', text: welcomeText(w, cs) });
     if (!cs.missions.length) parseMissions(w.missionsText).forEach((x) => cs.missions.push({ id: uid('m'), status: 'active', ...x }));
   }
   openMap.clear();
@@ -347,7 +376,7 @@ function applyResult(w, cs, r) {
   if (verdict === 'ooc' && delta > 0) delta = -delta;
   if (verdict === 'in_character' && delta < 0) delta = -delta;
   if (verdict === 'neutral') delta = 0;
-  cs.points = Math.max(0, cs.points + delta);
+  cs.points = S().deathRisk ? cs.points + delta : Math.max(0, cs.points + delta);
   if (r.message) { pushLog(cs, { kind: verdict, text: String(r.message), delta }); notify(String(r.message), delta); }
   for (const u of Array.isArray(r.missions) ? r.missions : []) {
     const m = cs.missions.find((x) => x.id === u.id && x.status === 'active');
@@ -357,7 +386,28 @@ function applyResult(w, cs, r) {
   }
   const nm = r.new_mission;
   if (nm && nm.title) addMission(cs, nm);
-  if (cs.points === 0 && prev > 0) pushLog(cs, { kind: 'ooc', text: t('zero', { pn: w.pointName }) });
+  const risk = S().deathRisk;
+  if (risk && cs.points <= 0 && !cs.dead && (prev > 0 || delta < 0)) terminate(w, cs);
+  else if (risk && cs.points > 0 && cs.points <= 25 && prev > 25) {
+    const txt = t('risk_low', { pn: w.pointName, pts: cs.points });
+    pushLog(cs, { kind: 'ooc', text: txt }); notify(txt);
+  } else if (!risk && cs.points === 0 && prev > 0) pushLog(cs, { kind: 'ooc', text: t('zero', { pn: w.pointName }) });
+}
+/* Death / expulsion: the run ends, the profile is locked until the player restarts it. Purely in the overlay; the chat is untouched. */
+function terminate(w, cs) {
+  cs.dead = true; cs.deaths = (cs.deaths || 0) + 1;
+  cs.missions.forEach((m) => { if (m.status === 'active') m.status = 'failed'; });
+  const txt = t('death', { pn: w.pointName, char: w.character || w.name });
+  pushLog(cs, { kind: 'death', text: txt });
+  notify(txt);
+}
+function restartRun() {
+  const w = currentWorld(), cs = CS();
+  if (!w || !cs) return;
+  cs.dead = false; cs.points = 100; cs.missions = []; cs.inventory = []; cs.lastUserIdx = -1;
+  parseMissions(w.missionsText).forEach((x) => cs.missions.push({ id: uid('m'), status: 'active', ...x }));
+  pushLog(cs, { kind: 'info', text: welcomeText(w, cs) });
+  saveChat(); render();
 }
 function addMission(cs, nm) {
   const m = { id: uid('m'), status: 'active', title: String(nm.title), desc: String(nm.desc || ''), reward: parseInt(nm.reward) || 50 };
@@ -376,9 +426,11 @@ function completeMission(m, silent) {
 async function evaluate(manual) {
   const s = S(), w = currentWorld(), cs = CS();
   if (!s.enabled) { dbg.lastSkip = 'extension disabled'; return; }
+  if (chatOff()) { dbg.lastSkip = 'switched off for this chat'; return; }
   if (busy) { dbg.lastSkip = 'already busy'; return; }
   if (!META()) { dbg.lastSkip = 'no chat metadata (no chat open?)'; return; }
   if (!w || !cs) { dbg.lastSkip = 'no world profile bound to this chat'; return; }
+  if (cs.dead) { dbg.lastSkip = 'host terminated (restart it in the Status tab)'; return; }
   const idx = lastUserIndex();
   if (idx < 0) { dbg.lastSkip = 'no user message in chat'; if (manual) window.toastr?.warning(t('need_msg')); return; }
   if (!manual && cs.lastUserIdx === idx) { dbg.lastSkip = 'this user message was already evaluated'; return; }
@@ -415,7 +467,7 @@ delta must be 0 for neutral. Offer new_mission only if there are no active missi
 
 async function askSystem() {
   const w = currentWorld(), cs = CS(), q = askDraft.trim();
-  if (!w || !cs || !q || busy) return;
+  if (!w || !cs || !q || busy || cs.dead) return;
   busy = true; askDraft = ''; render();
   try {
     const user = `Current ${w.pointName}: ${cs.points}
@@ -433,7 +485,7 @@ Answer in your voice in at most 3 sentences. You may hint at how the bound chara
 
 async function aiMission() {
   const w = currentWorld(), cs = CS();
-  if (!w || !cs || busy) return;
+  if (!w || !cs || busy || cs.dead) return;
   busy = true; render();
   try {
     const have = cs.missions.filter((m) => m.status === 'active').map((m) => m.title).join('; ') || '(none)';
@@ -514,13 +566,17 @@ async function confirmBox(msg) {
 
 /* ------------------------------------------------------------------ views */
 const openSecs = { src: true, prof: true, shop: false };
-const ICON = { in_character: 'fa-circle-check', ooc: 'fa-triangle-exclamation', reward: 'fa-gift', info: 'fa-circle-info', ask: 'fa-comment-dots', neutral: 'fa-minus' };
+const ICON = { death: 'fa-skull', in_character: 'fa-circle-check', ooc: 'fa-triangle-exclamation', reward: 'fa-gift', info: 'fa-circle-info', ask: 'fa-comment-dots', neutral: 'fa-minus' };
 const TAB_ICON = { status: 'fa-gauge-high', missions: 'fa-list-check', shop: 'fa-store', world: 'fa-globe', settings: 'fa-sliders', diag: 'fa-stethoscope' };
 const hhmm = (ts) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
 function opSlider() {
   return `<input type="range" class="svs-op" min="25" max="100" value="${Math.round(S().opacity * 100)}" aria-label="${t('s_opacity')}">`;
 }
+const deadCard = (w) => `<div class="svs-dead"><i class="fa-solid fa-skull"></i><b>${t('dead_title')}</b><p>${esc(t('dead_text', { pn: w.pointName }))}</p>
+  <button class="svs-btn svs-danger wide" data-act="revive"><i class="fa-solid fa-rotate-left"></i> ${t('dead_restart')}</button></div>`;
+const offView = () => `<div class="svs-empty big"><i class="fa-solid fa-power-off"></i><p>${t('chat_off')}</p>
+  <button class="svs-btn svs-primary" data-act="chat-toggle"><i class="fa-solid fa-power-off"></i> ${t('chat_enable')}</button></div>`;
 function chipsHtml() {
   const s = S(), m = META();
   if (!s.worlds.length) return '';
@@ -539,6 +595,7 @@ const noWorld = () => `${chipsHtml()}<div class="svs-empty big"><i class="fa-sol
 
 function viewStatus() {
   const w = currentWorld(), cs = CS();
+  if (chatOff()) return offView();
   if (!w || !cs) return noWorld();
   const log = [...cs.log].reverse().map((e) => {
     const k = ICON[e.kind] ? e.kind : 'info';
@@ -562,15 +619,19 @@ function viewStatus() {
       <div class="svs-stat"><span>${t('st_missions')}</span><b>${nAct}</b></div>
       <div class="svs-stat"><span>${t('st_items')}</span><b>${cs.inventory.length}</b></div>
       <div class="svs-stat"><span>${t('st_last')}</span><b class="${last ? (last.kind === 'ooc' ? 'neg' : 'pos') : ''}">${lastTxt}</b></div>
+      ${S().deathRisk ? `<div class="svs-stat"><span>${t('st_risk')}</span><b class="neg">${t('risk_on')}</b></div>` : ''}
+      ${cs.deaths ? `<div class="svs-stat"><span>${t('st_deaths')}</span><b class="neg">${cs.deaths}</b></div>` : ''}
     </div>
   </div>
-  <button class="svs-btn svs-primary wide" data-act="eval" ${busy ? 'disabled' : ''}><i class="fa-solid ${busy ? 'fa-circle-notch fa-spin' : 'fa-bolt'}"></i> ${busy ? t('thinking') : t('evaluate')}</button>
-  <div class="svs-ask"><input id="svs_ask" type="text" placeholder="${t('ask_ph')}" value="${esc(askDraft)}"><button class="svs-btn icon" data-act="ask" ${busy ? 'disabled' : ''} aria-label="${t('ask_btn')}"><i class="fa-solid fa-paper-plane"></i></button></div>
+  ${cs.dead ? deadCard(w) : ''}
+  <button class="svs-btn svs-primary wide" data-act="eval" ${busy || cs.dead ? 'disabled' : ''}><i class="fa-solid ${busy ? 'fa-circle-notch fa-spin' : 'fa-bolt'}"></i> ${busy ? t('thinking') : t('evaluate')}</button>
+  <div class="svs-ask"><input id="svs_ask" type="text" placeholder="${t('ask_ph')}" value="${esc(askDraft)}"><button class="svs-btn icon" data-act="ask" ${busy || cs.dead ? 'disabled' : ''} aria-label="${t('ask_btn')}"><i class="fa-solid fa-paper-plane"></i></button></div>
   <div class="svs-log">${log}</div>
   <button class="svs-btn ghost svs-danger wide" data-act="reset"><i class="fa-solid fa-rotate-left"></i> ${t('reset_state')}</button>`;
 }
 function viewMissions() {
   const w = currentWorld(), cs = CS();
+  if (chatOff()) return offView();
   if (!w || !cs) return noWorld();
   const act = cs.missions.filter((m) => m.status === 'active');
   const hist = cs.missions.filter((m) => m.status !== 'active').reverse();
@@ -589,6 +650,7 @@ function viewMissions() {
 }
 function viewShop() {
   const w = currentWorld(), cs = CS();
+  if (chatOff()) return offView();
   if (!w || !cs) return noWorld();
   const items = parseShop(w.shopText);
   const shop = items.map((it, i) => `<div class="svs-card"><div class="svs-cardhead"><b>${esc(it.name)}</b>
@@ -654,6 +716,11 @@ function viewSettings() {
   return `
   ${sw('svs_en', s.enabled, t('s_enabled'))}
   <div class="svs-group">
+    <div class="svs-gh"><i class="fa-solid fa-power-off"></i> ${t('sec_thischat')}</div>
+    ${sw('svs_chatson', !chatOff(), t('s_chaton'))}
+    ${sw('svs_newoff', s.newChatsOff, t('s_newoff'))}
+  </div>
+  <div class="svs-group">
     <label>${t('s_lang')}${sel('svs_lang', s.lang, [['en', 'English'], ['ru', 'Русский']])}</label>
     <label>${t('s_outlang')}${sel('svs_outlang', s.outLang, [['ui', t('out_ui')], ['en', 'English'], ['ru', 'Русский'], ['chat', t('out_chat')]])}</label>
   </div>
@@ -685,6 +752,8 @@ function viewSettings() {
     <label>${t('s_ctx')}<input type="number" id="svs_ctxn" min="2" max="30" value="${s.ctxMessages}"></label>
     <label>${t('s_strict')}${sel('svs_strict', s.strict, [['gentle', t('gentle')], ['normal', t('normal')], ['harsh', t('harsh')]])}</label>
     ${sw('svs_toast', s.toasts, t('s_toast'))}
+    ${sw('svs_risk', s.deathRisk, t('s_risk'))}
+    <small class="svs-hint">${t('s_risk_hint')}</small>
   </div>
   <div class="svs-group">
     <div class="svs-gh"><i class="fa-regular fa-message"></i> ${t('sec_chat')}</div>
@@ -748,13 +817,14 @@ async function runDiag() {
   });
   await safe('Settings', async () => {
     const s = S();
-    add(true, 'Settings', `enabled=${s.enabled}, lang=${s.lang}, opacity=${s.opacity}, autoEval=${s.autoEval}, ctx=${s.ctxMessages}, worlds=${s.worlds.length}`);
+    add(true, 'Settings', `enabled=${s.enabled}, lang=${s.lang}, opacity=${s.opacity}, autoEval=${s.autoEval}, ctx=${s.ctxMessages}, worlds=${s.worlds.length}, deathRisk=${s.deathRisk}`);
   });
   await safe('Chat', async () => {
     const c = ctx(), cs = CS(), w = currentWorld();
     add(Array.isArray(c.chat), 'Chat', `${c.chat?.length ?? '?'} messages, user "${c.name1}", character "${c.name2 ?? '?'}"${c.groupId ? ', group chat' : ''}`);
     add(!!META(), 'Chat metadata', META() ? 'available' : 'unavailable — open a chat first');
     add(w ? true : 'warn', 'World bound to this chat', w ? `"${w.name}" · character "${w.character || '(empty)'}" · ${cs.points} ${w.pointName}` : 'NONE — the System stays silent until you pick/create one in the World tab');
+    add(chatOff() ? 'warn' : true, 'System in this chat', chatOff() ? 'SWITCHED OFF for this chat (power button in the header, or Settings → This chat)' : 'on');
     add(true, 'In-chat popups', `${document.querySelectorAll('.' + POP).length} in the DOM · placement ${S().chatPlace} · attach to ${S().chatTarget} · enabled ${S().chatPopup}`);
     add(lastUserIndex() >= 0 ? true : 'warn', 'Player message to evaluate', lastUserIndex() >= 0 ? `index ${lastUserIndex()}, last evaluated ${cs?.lastUserIdx}` : 'no user message yet');
   });
@@ -821,6 +891,7 @@ async function copyText(txt) {
   window.toastr?.success(t('diag_copied'));
 }
 window.__svsDiag = async () => { await runDiag(); console.log(diagText()); return diagText(); };
+window.__svs = { dbg, chatOff, META }; // debug handle for support/tests
 
 /* ------------------------------------------------------------ in-chat popups */
 /* Purely visual: nodes are drawn into the chat DOM from the saved log. Nothing is written to the chat or the prompt. */
@@ -856,7 +927,7 @@ function injectAll() {
     const chatEl = document.getElementById('chat');
     if (!chatEl) return;
     const s = S(), w = currentWorld();
-    const map = (s.enabled && s.chatPopup && w) ? popEntries() : new Map();
+    const map = (s.enabled && s.chatPopup && w && !chatOff()) ? popEntries() : new Map();
     chatEl.querySelectorAll('.' + POP).forEach((n) => {
       const list = map.get(Number(n.dataset.mes));
       if (!list || n.dataset.place !== s.chatPlace || n.dataset.sig !== popSig(list)) n.remove();
@@ -948,7 +1019,7 @@ function renderFab() {
     const s = S();
     const panelOpen = s.open && (s.enabled || s.tab === 'diag'); // the open window has its own close button; hide the button so it never overlaps
     const show = !!(s.showFab && s.enabled) && !panelOpen;
-    $('#svs_fab').toggleClass('svs-hidden', !show).toggleClass('svs-nobind', !currentWorld());
+    $('#svs_fab').toggleClass('svs-hidden', !show).toggleClass('svs-nobind', !currentWorld()).toggleClass('svs-off', chatOff());
     applyFab();
     if (show) placeFab();
   } catch (e) { logErr('renderFab', e); }
@@ -1009,7 +1080,7 @@ function render() {
     $('#svs_tabs').html(tabs.map((k) => `<button class="svs-tab ${s.tab === k ? 'on' : ''}" data-act="tab" data-tab="${k}" title="${t('tab_' + k)}"><i class="fa-solid ${TAB_ICON[k]}"></i><span>${t('tab_' + k)}</span></button>`).join(''));
     $('#svs_title').text(t('title'));
     const cs = CS(), w = currentWorld();
-    $('#svs_foot').html(`<span class="svs-led"></span><span>${t('online')}</span><span class="svs-foot-c">${t('foot_active')}</span><span class="svs-foot-w">${w ? esc(w.name) : t('foot_wait')}</span>`);
+    $('#svs_foot').html(`<span class="svs-led ${chatOff() ? 'off' : ''}"></span><span>${chatOff() ? t('foot_off') : t('online')}</span><span class="svs-foot-c">${chatOff() ? '' : t('foot_active')}</span><span class="svs-foot-w">${w ? esc(w.name) : t('foot_wait')}</span>`);
     $('#svs_pts').html(w && cs ? `<i class="fa-solid fa-coins"></i> ${cs.points}` : '');
     const views = { status: viewStatus, missions: viewMissions, shop: viewShop, world: viewWorld, settings: viewSettings, diag: viewDiag };
     const body = document.getElementById('svs_body');
@@ -1017,6 +1088,7 @@ function render() {
     body.innerHTML = (views[s.tab] || viewStatus)();
     body.scrollTop = top;
     $('#svs_diagbtn').toggleClass('on', s.tab === 'diag');
+    $('#svs_pwr').toggleClass('off', chatOff()).attr('title', chatOff() ? t('chat_enable') : t('chat_disable'));
     const showPanel = s.open && (s.enabled || s.tab === 'diag'), showFab = s.showFab && s.enabled;
     $('#svs_panel').toggleClass('svs-hidden', !showPanel);
     if (showPanel) layoutPanel();
@@ -1125,6 +1197,7 @@ function buildUI() {
           <span id="svs_title"></span><span id="svs_pts"></span>
           <span class="svs-spacer"></span>
           <span class="svs-oprow" title="Opacity"><i class="fa-regular fa-eye"></i>${opSlider()}</span>
+          <button id="svs_pwr" class="svs-x" data-act="chat-toggle" aria-label="Switch on/off for this chat"><i class="fa-solid fa-power-off"></i></button>
           <button id="svs_diagbtn" class="svs-x" data-act="diag-toggle" aria-label="Diagnostics"><i class="fa-solid fa-stethoscope"></i></button>
           <button id="svs_close" class="svs-x" data-act="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
         </div>
@@ -1191,6 +1264,14 @@ function buildUI() {
             if (it) pushLog(cs, { kind: 'info', text: t('used_item', { item: it.name }) });
             saveChat(); render(); break;
           }
+          case 'revive': restartRun(); break;
+          case 'chat-toggle': {
+            const m = META();
+            if (!m) { window.toastr?.warning(t('no_chat')); break; }
+            m.off = !m.off; saveChat(); render();
+            window.toastr?.info(t(m.off ? 'toggled_off' : 'toggled_on'));
+            break;
+          }
           case 'w-switch': bindWorld(el.dataset.id); break;
           case 'w-mode': if (w) { w.mode = el.dataset.mode === 'oc' ? 'oc' : 'canon'; save(); render(); } break;
           case 'w-new': { const nw = newWorld(); st.worlds.push(nw); save(); bindWorld(nw.id); break; }
@@ -1245,6 +1326,9 @@ function buildUI() {
       svs_fabchk: (el) => { S().showFab = el.checked; },
       svs_toast: (el) => { S().toasts = el.checked; },
       svs_round: (el) => { S().rounded = el.checked; },
+      svs_risk: (el) => { S().deathRisk = el.checked; },
+      svs_chatson: (el) => { const m = META(); if (!m) { window.toastr?.warning(t('no_chat')); return; } m.off = !el.checked; saveChat(); },
+      svs_newoff: (el) => { S().newChatsOff = el.checked; },
       svs_avmode: (el) => { S().avatarMode = el.value; },
       svs_chatpop: (el) => { S().chatPopup = el.checked; },
       svs_chatplace: (el) => { S().chatPlace = el.value; },

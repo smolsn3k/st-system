@@ -1,38 +1,48 @@
-# The System – SillyTavern extension
+# The System — SillyTavern extension
 
-A private, game-like "System" (inspired by *Scum Villain's Self-Saving System*) that only YOU can see.
-It watches your roleplay, hands out points for staying in character, deducts them for OOC behaviour,
-gives missions and runs a shop. The character in the chat never sees any of it:
-nothing is written into the chat or into the prompt of the character.
+**English** | [Русский](README.ru.md)
 
-## Install
-Copy the folder to `SillyTavern/public/scripts/extensions/third-party/SillyTavern-System/`
-(or upload it to GitHub and use *Extensions → Install extension*). Reload SillyTavern.
-Requires SillyTavern 1.13+. For the connection profile chooser, enable the built-in **Connection Manager** extension.
+A private, game-like **System** for SillyTavern, inspired by *Scum Villain's Self-Saving System*. It watches your roleplay and tells **you** how well you play your role: it gives points for acting in character, takes them away for out-of-character behaviour, hands out missions and runs a shop. Only you can see it. Nothing is written into the chat or the prompt, so the character never knows the System exists.
 
-## Use
-1. Tap the 【S】 button (or Wand menu → System, or Extensions → System → Open).
-2. World tab → New → type a fandom + character → **Fill with AI** (or paste wiki URLs, pick a lorebook, or write it yourself).
+Works with any fandom and any character, on desktop and mobile.
+
+## What it does
+
+- **Points, missions and shop** — in-character acts earn points, OOC acts cost points. Missions, a shop with an inventory, and an "Ask the System" box for private hints.
+- **Optional death / expulsion risk** — the System warns you from the start; if your points drop to zero or below, it erases you and locks the profile until you restart it. Can be switched on or off in settings.
+- **World profiles for any fandom** — bind yourself to a **canon character**, or be inserted as an **original character** with your own story and entry point in the canon timeline.
+- **Fill a profile automatically** from the model's own knowledge of the fandom, from Fandom wiki page links, from a lorebook, or from your own description. Or write everything by hand.
+- **Save, switch, import and export profiles** — each profile keeps its own points, missions and items inside every chat.
+- **In-chat popup** — a collapsible System window drawn in the chat, at the top, middle or bottom of a message. It is display-only.
+- **On/off per chat**, plus an optional "new chats start switched off".
+- **Look and feel** — holographic HUD style, opacity and background blur sliders, optional rounded corners, resizable draggable floating button, avatar from your persona, the chat character or your own image.
+- **Connection profile chooser** (uses SillyTavern's Connection Manager) with a reload button, so the System can use a different model from your main chat.
+- **English and Russian** interface; the System can speak a different language than the interface or match the chat.
+- **Diagnostics** button that checks the extension and the model connection and produces a report you can copy.
+
+## Installation
+
+### From GitHub (recommended)
+
+1. In SillyTavern open **Extensions** (puzzle-piece icon) → **Install extension**.
+2. Paste the link and confirm:
+
+   ```
+   https://github.com/smolsn3k/st-system
+   ```
+
+3. Reload the page. A small **S** button appears on the screen (you can also open the System from the Wand menu or from Extensions → The System).
+
+### Manually
+
+1. Download this repository as a ZIP and unpack it so that the folder `st-system` contains `manifest.json`, `index.js` and `style.css`.
+2. Put the folder into `SillyTavern/data/<your-user>/extensions/` (for one user) or `SillyTavern/public/scripts/extensions/third-party/` (for everyone).
+3. Restart or reload SillyTavern.
+
+**Requirements:** SillyTavern 1.13 or newer. For the connection profile chooser, enable the built-in **Connection Manager** extension.
+
+## Quick start
+
+1. Tap **S** → **World** → **New**.
+2. Choose canon or original character, type the fandom and character name, then press **Fill with AI** (or add wiki links, pick a lorebook, or write the profile yourself).
 3. Chat as usual. After each character reply the System judges your last message.
-
-## Troubleshooting
-Tap the stethoscope icon in the panel header (or Extensions → The System → Diagnostics) and press **Run diagnostics**.
-It checks the DOM, events, settings, chat state, Connection Manager, a live model call and Fandom access,
-then lets you copy a plain-text report. From the browser console you can also run `__svsDiag()`.
-If the floating button is off screen: Settings → Reset button position.
-
-## v1.2 features
-- **Profiles**: each world profile keeps its own points, missions, items and log inside every chat. Switch from the chip bar on the Status tab or the World tab; "Save as copy" clones a profile.
-- **Role**: bind to a *canon character* or insert an *original character* (own story, entry point in the canon timeline). The System's prompts and the AI fill adapt to the mode.
-- **In-chat popup**: a collapsible System window drawn in the chat (top / middle / bottom of a message; attach to the character's reply or to your message). It is display-only: nothing is written into the chat or the prompt, so the character never knows.
-- **HUD look** modelled on a holographic system window.
-
-## v1.3
-- No Chinese text anywhere; titles are capitalised ("System" / "Система").
-- Settings → Appearance: opacity, **background blur** slider, **rounded corners** on/off, floating-button size.
-- Settings → Avatar: from your active chat persona, from the chat character, or a custom image you upload.
-- The floating button is now always placed inside the visible screen and rendered first; "Reset button position" also restores its visibility, size and opacity.
-
-## v1.3.1
-- Fixed background blur: the window frame is now a thin outline instead of a solid sheet, so the blurred page is visible through the glass. Blur applies to the extension's own window background only (never to the chat or the rest of SillyTavern). Higher blur also makes the glass more see-through.
-- The floating button hides while the window is open.
