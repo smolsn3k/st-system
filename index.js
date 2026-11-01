@@ -19,7 +19,7 @@ en: {
   shop_empty: 'The shop is empty. Add items in the World tab.', buy: 'Buy', inventory: 'Inventory', inv_empty: 'Nothing owned yet.', use: 'Use',
   not_enough: 'Not enough points.', used_item: 'Item used: {item}', bought_item: 'Purchased: {item}',
   active_world: 'World profile for this chat', world_none: '— none (System off for this chat) —',
-  new: 'New', dup: 'Duplicate', del: 'Delete', export: 'Export', export_all: 'Export all', import: 'Import',
+  new: 'New', dup: 'Save as copy', del: 'Delete', export: 'Export', export_all: 'Export all', import: 'Import',
   confirm_del: 'Delete this world profile?',
   f_name: 'Profile name', f_fandom: 'Fandom / universe', f_character: 'Character you are bound to',
   f_wiki: 'Fandom wiki page URLs (optional, one per line)', f_lore: 'Lorebook source (optional)',
@@ -47,7 +47,15 @@ en: {
   diag_hint: 'Run the checks, then copy the report and send it to whoever helps you debug.', diag_reset_fab: 'Reset button position',
   sec_source: 'Sources', sec_profile: 'Profile', sec_shop: 'Shop & missions', st_missions: 'Missions', st_items: 'Items', st_last: 'Last verdict',
   v_in_character: 'In character', v_ooc: 'OOC', v_none: '—', parse_fallback: 'The model did not return valid JSON; showing its raw reply.',
-  no_world_dot: 'No world bound to this chat', s_fabsize: 'Button size'
+  no_world_dot: 'No world bound to this chat', s_fabsize: 'Button size',
+  online: 'System online', foot_wait: 'Awaiting binding', save_note: 'Changes save automatically. Points, missions and items are kept separately for each profile in this chat.',
+  mode_label: 'Role', mode_canon: 'Canon character', mode_oc: 'Original character', bound_to_oc: 'Playing as (original character)',
+  f_character_oc: 'Your original character (name)', f_persona_oc: 'OC personality, background & behaviour', f_plot_oc: "The OC's own story & goals in this fandom",
+  f_notes_oc: 'Describe your OC (appearance, past, traits, secrets)', f_entry: 'Entry point in the canon timeline (when / where they appear)',
+  welcome_oc: 'Ding! Binding complete. Host is inserted as the original character "{char}". Starting balance: {pts} {pn}. Stay true to this character and the world.',
+  sec_chat: 'In-chat popup', s_chatpop: 'Show System popups in the chat', s_chatplace: 'Popup placement', place_top: 'Top of the message',
+  place_middle: 'Middle of the message', place_bottom: 'Bottom of the message', s_chattarget: 'Attach popup to', target_reply: 'Character reply', target_mine: 'My message',
+  s_chatopen: 'Expanded by default', profiles_label: 'Profiles'
 },
 ru: {
   title: 'Система', tab_status: 'Статус', tab_missions: 'Задания', tab_shop: 'Магазин', tab_world: 'Мир', tab_settings: 'Настройки',
@@ -60,7 +68,7 @@ ru: {
   shop_empty: 'Магазин пуст. Добавьте товары на вкладке «Мир».', buy: 'Купить', inventory: 'Инвентарь', inv_empty: 'Пока ничего нет.', use: 'Применить',
   not_enough: 'Недостаточно очков.', used_item: 'Предмет применён: {item}', bought_item: 'Куплено: {item}',
   active_world: 'Профиль мира для этого чата', world_none: '— нет (Система выключена в этом чате) —',
-  new: 'Новый', dup: 'Копия', del: 'Удалить', export: 'Экспорт', export_all: 'Экспорт всех', import: 'Импорт',
+  new: 'Новый', dup: 'Сохранить копией', del: 'Удалить', export: 'Экспорт', export_all: 'Экспорт всех', import: 'Импорт',
   confirm_del: 'Удалить этот профиль мира?',
   f_name: 'Название профиля', f_fandom: 'Фандом / вселенная', f_character: 'Персонаж, к которому вы привязаны',
   f_wiki: 'Ссылки на страницы вики Fandom (необязательно, по одной в строке)', f_lore: 'Источник — лорбук (необязательно)',
@@ -88,7 +96,15 @@ ru: {
   diag_hint: 'Запустите проверки, скопируйте отчёт и отправьте тому, кто помогает с отладкой.', diag_reset_fab: 'Сбросить позицию кнопки',
   sec_source: 'Источники', sec_profile: 'Профиль', sec_shop: 'Магазин и задания', st_missions: 'Задания', st_items: 'Предметы', st_last: 'Последний вердикт',
   v_in_character: 'В образе', v_ooc: 'OOC', v_none: '—', parse_fallback: 'Модель не вернула корректный JSON; показан её сырой ответ.',
-  no_world_dot: 'К чату не привязан мир', s_fabsize: 'Размер кнопки'
+  no_world_dot: 'К чату не привязан мир', s_fabsize: 'Размер кнопки',
+  online: 'Система активна', foot_wait: 'Ожидание привязки', save_note: 'Изменения сохраняются автоматически. Очки, задания и предметы хранятся отдельно для каждого профиля в этом чате.',
+  mode_label: 'Роль', mode_canon: 'Канонный персонаж', mode_oc: 'Оригинальный персонаж', bound_to_oc: 'Играете за (оригинального персонажа)',
+  f_character_oc: 'Ваш оригинальный персонаж (имя)', f_persona_oc: 'Характер, прошлое и поведение ОП', f_plot_oc: 'Собственная история и цели ОП в этом фандоме',
+  f_notes_oc: 'Опишите вашего ОП (внешность, прошлое, черты, тайны)', f_entry: 'Точка входа в канонный сюжет (когда / где появляется)',
+  welcome_oc: 'Дзынь! Привязка завершена. Хост внедрён как оригинальный персонаж «{char}». Стартовый баланс: {pts} {pn}. Оставайтесь верны этому персонажу и миру.',
+  sec_chat: 'Окно в чате', s_chatpop: 'Показывать окна Системы в чате', s_chatplace: 'Расположение окна', place_top: 'Сверху сообщения',
+  place_middle: 'В середине сообщения', place_bottom: 'Снизу сообщения', s_chattarget: 'Прикреплять окно к', target_reply: 'Ответу персонажа', target_mine: 'Моему сообщению',
+  s_chatopen: 'Развёрнуто по умолчанию', profiles_label: 'Профили'
 }
 };
 function t(k, v) {
@@ -99,7 +115,7 @@ function t(k, v) {
 }
 
 /* ------------------------------------------------------------ debug store */
-const VERSION = '1.1.3';
+const VERSION = '1.2.0';
 const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
 function logErr(where, e) {
   const msg = (e && (e.stack || e.message)) || String(e);
@@ -113,7 +129,7 @@ const hit = (name) => { dbg.events[name] = { n: (dbg.events[name]?.n || 0) + 1, 
 const DEFAULTS = {
   enabled: true, lang: 'en', outLang: 'ui', opacity: 0.95, profileId: '', autoEval: true,
   ctxMessages: 6, strict: 'normal', showFab: true, toasts: true, open: false, tab: 'status',
-  fabPos: null, fabSize: 38, worlds: []
+  fabPos: null, fabSize: 38, chatPopup: true, chatPlace: 'bottom', chatTarget: 'reply', chatOpen: false, worlds: []
 };
 function S() {
   const { extensionSettings } = ctx();
@@ -124,11 +140,24 @@ function S() {
 }
 const save = () => { try { ctx().saveSettingsDebounced(); } catch (e) { logErr('saveSettings', e); } };
 
-function CS() {
+const blankState = () => ({ points: 100, log: [], missions: [], inventory: [], lastUserIdx: -1 });
+/* Chat metadata root: { worldId, states: { [worldId]: progress } } — every profile keeps its own progress in this chat. */
+function META() {
   const md = ctx().chatMetadata;
   if (!md) return null;
-  if (!md[MODULE]) md[MODULE] = { worldId: '', points: 100, log: [], missions: [], inventory: [], lastUserIdx: -1 };
-  return md[MODULE];
+  let m = md[MODULE];
+  if (!m) m = md[MODULE] = { worldId: '', states: {} };
+  if (!m.states) { // migrate the old flat format
+    const old = { points: m.points ?? 100, log: m.log || [], missions: m.missions || [], inventory: m.inventory || [], lastUserIdx: m.lastUserIdx ?? -1 };
+    md[MODULE] = m = { worldId: m.worldId || '', states: m.worldId ? { [m.worldId]: old } : {} };
+  }
+  return m;
+}
+/* Progress of the currently bound profile in this chat (null when none is bound). */
+function CS() {
+  const m = META();
+  if (!m || !m.worldId) return null;
+  return m.states[m.worldId] || (m.states[m.worldId] = blankState());
 }
 function saveChat() {
   const c = ctx();
@@ -140,14 +169,14 @@ const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 
 function newWorld(over = {}) {
   return Object.assign({
-    id: uid('w'), name: t('new_world'), fandom: '', character: '', wikiUrls: '', lorebook: '', notes: '',
+    id: uid('w'), name: t('new_world'), mode: 'canon', entry: '', fandom: '', character: '', wikiUrls: '', lorebook: '', notes: '',
     world: '', persona: '', plot: '', systemVoice: '', pointName: t('def_pn'), shopText: '', missionsText: ''
   }, over);
 }
 function currentWorld() {
-  const cs = CS();
-  if (!cs || !cs.worldId) return null;
-  return S().worlds.find((w) => w.id === cs.worldId) || null;
+  const m = META();
+  if (!m || !m.worldId) return null;
+  return S().worlds.find((w) => w.id === m.worldId) || null;
 }
 
 /* ------------------------------------------------------------ text utils */
@@ -255,18 +284,21 @@ function transcript() {
     `${i === lastU ? '>>> ' : ''}${m.name}: ${String(m.mes).replace(/<[^>]+>/g, '').slice(0, 1500)}`).join('\n\n');
 }
 function systemPrompt(w) {
-  const c = ctx();
+  const c = ctx(), pn = w.pointName, oc = w.mode === 'oc';
   const strict = {
     gentle: 'Be lenient: small deviations cost little (about -5 to -15) and rewards are modest.',
     normal: 'Be fair: clear OOC acts cost about -15 to -40, good in-character or plot-advancing acts earn about +10 to +40.',
     harsh: 'Be strict: any OOC act costs -20 to -60; rewards are rare and small unless the act is excellent.'
   }[S().strict];
+  const job = oc
+    ? `Your job, in the manner of the System from "Scum Villain's Self-Saving System": the player is an ORIGINAL CHARACTER, "${w.character}", inserted into this fandom${w.entry ? ' (entry point: ' + w.entry + ')' : ''}. Keep the player consistent with this character's established personality and own story. Reward in-character behaviour and choices that advance the character's own storyline and respect the logic of the world with ${pn}; punish out-of-character (OOC) behaviour for THIS character and actions that break the world's rules or logic by deducting ${pn}; hand out missions that move the original character's story and let it intersect with canon characters and events. Canon characters and events are real constraints, but the character may change them with believable consequences.`
+    : `Your job, in the manner of the System from "Scum Villain's Self-Saving System": make the player behave as the bound character "${w.character}" would. Reward in-character behaviour and advancing the original storyline with ${pn}; punish out-of-character (OOC) behaviour and plot deviations by deducting ${pn}; hand out missions.`;
   return `You are THE SYSTEM, an invisible game-like interface bound to the player ("${c.name1}") in a roleplay. Only the player can perceive you. Characters in the story are completely unaware of you: never address them and never write as if they could hear you.
-Your job, in the manner of the System from "Scum Villain's Self-Saving System": make the player behave as the bound character "${w.character}" would. Reward in-character behaviour and advancing the original storyline with ${w.pointName}; punish out-of-character (OOC) behaviour and plot deviations by deducting ${w.pointName}; hand out missions.
+${job}
 Fandom / universe: ${w.fandom || 'original world'}
 World & setting: ${w.world || 'n/a'}
-Character persona & canon behaviour: ${w.persona || 'n/a'}
-Original storyline / System goals: ${w.plot || 'n/a'}
+${oc ? 'Original character persona, background & behaviour' : 'Character persona & canon behaviour'}: ${w.persona || 'n/a'}
+${oc ? "The original character's own story & goals" : 'Original storyline / System goals'}: ${w.plot || 'n/a'}
 Your voice: ${w.systemVoice || t('default_voice')}. Notices are short (1-2 sentences), like 【 ... 】 system notices, but write the text WITHOUT the brackets.
 Scoring: ${strict}
 ${langInstruction()}`;
@@ -275,7 +307,9 @@ ${langInstruction()}`;
 /* ---------------------------------------------------------------- state */
 let busy = false, askDraft = '', overwrite = false;
 
+let attachIdx = -1; // chat message index that new notices belong to (set while evaluating)
 function pushLog(cs, e) {
+  if (attachIdx >= 0 && e.kind !== 'ask' && e.mes === undefined) e.mes = attachIdx;
   cs.log.push(Object.assign({ time: Date.now() }, e));
   if (cs.log.length > 200) cs.log.splice(0, cs.log.length - 200);
 }
@@ -288,13 +322,14 @@ function notify(text, delta) {
   }
 }
 function bindWorld(id) {
-  const cs = CS(); if (!cs) return;
-  cs.worldId = id;
-  const w = currentWorld();
-  if (w && cs.log.length === 0) {
-    pushLog(cs, { kind: 'info', text: t('welcome', { char: w.character || w.name, pts: cs.points, pn: w.pointName }) });
-    if (!cs.missions.length) parseMissions(w.missionsText).forEach((m) => cs.missions.push({ id: uid('m'), status: 'active', ...m }));
+  const m = META(); if (!m) return;
+  m.worldId = S().worlds.some((x) => x.id === id) ? id : '';
+  const w = currentWorld(), cs = CS();
+  if (w && cs && cs.log.length === 0) {
+    pushLog(cs, { kind: 'info', text: t(w.mode === 'oc' ? 'welcome_oc' : 'welcome', { char: w.character || w.name, pts: cs.points, pn: w.pointName }) });
+    if (!cs.missions.length) parseMissions(w.missionsText).forEach((x) => cs.missions.push({ id: uid('m'), status: 'active', ...x }));
   }
+  openMap.clear();
   saveChat(); render();
 }
 
@@ -336,8 +371,8 @@ async function evaluate(manual) {
   const s = S(), w = currentWorld(), cs = CS();
   if (!s.enabled) { dbg.lastSkip = 'extension disabled'; return; }
   if (busy) { dbg.lastSkip = 'already busy'; return; }
-  if (!cs) { dbg.lastSkip = 'no chat metadata (no chat open?)'; return; }
-  if (!w) { dbg.lastSkip = 'no world profile bound to this chat'; return; }
+  if (!META()) { dbg.lastSkip = 'no chat metadata (no chat open?)'; return; }
+  if (!w || !cs) { dbg.lastSkip = 'no world profile bound to this chat'; return; }
   const idx = lastUserIndex();
   if (idx < 0) { dbg.lastSkip = 'no user message in chat'; if (manual) window.toastr?.warning(t('need_msg')); return; }
   if (!manual && cs.lastUserIdx === idx) { dbg.lastSkip = 'this user message was already evaluated'; return; }
@@ -358,6 +393,7 @@ Evaluate ONLY the player's latest message (>>>), using the character's reply as 
 delta must be 0 for neutral. Offer new_mission only if there are no active missions or the story clearly opens an opportunity.`;
     const raw = await llm(systemPrompt(w), user, 700);
     const r = extractJSON(raw);
+    attachIdx = S().chatTarget === 'mine' ? idx : Math.max(0, (ctx().chat || []).length - 1);
     if (!r) {
       if (!raw) throw new Error('empty reply from the model');
       window.toastr?.warning(t('parse_fallback'));
@@ -368,7 +404,7 @@ delta must be 0 for neutral. Offer new_mission only if there are no active missi
   } catch (e) {
     logErr('evaluate', e);
     window.toastr?.error(t('err', { err: e.message || e }));
-  } finally { busy = false; render(); }
+  } finally { attachIdx = -1; busy = false; render(); }
 }
 
 async function askSystem() {
@@ -412,19 +448,26 @@ async function fillWorld() {
   try {
     const [wiki, lore] = await Promise.all([readWiki(w.wikiUrls), readLorebook(w.lorebook)]);
     const system = 'You are a worldbuilding assistant that prepares a profile for a roleplay overlay. Output ONLY one valid JSON object, no markdown, no commentary.';
+    const oc = w.mode === 'oc';
+    const roleLine = oc
+      ? `The player creates an ORIGINAL CHARACTER (not a canon character) who is inserted into this fandom.\nOC name: ${w.character || '(invent a fitting name)'}\nEntry point in the canon timeline: ${w.entry || '(choose a fitting point)'}`
+      : `Canon character the player is bound to: ${w.character || '(choose the most fitting protagonist of this universe)'}`;
+    const worldHint = oc ? 'setting, factions, rules of the world and the relevant canon timeline around the entry point (max 150 words)' : 'setting, factions, rules of the world (max 150 words)';
+    const personaHint = oc ? "the original character's personality, background, speech style, habits, do's and don'ts, built from the user's notes (max 150 words)" : "the character's canon personality, speech style, habits, do's and don'ts (max 150 words)";
+    const plotHint = oc ? "the original character's OWN storyline inside this fandom: goals, secrets, conflicts, 3-5 arc beats and how they intersect with key canon events and characters (max 180 words)" : 'key canon storyline beats and what the System wants the player to preserve or achieve (max 150 words)';
     const user = `Fandom / universe: ${w.fandom || '(not given)'}
-Character the player is bound to: ${w.character || '(choose the most fitting protagonist or ask-worthy main character of this universe)'}
+${roleLine}
 User notes: ${w.notes || '(none)'}
 ${wiki ? `\nWiki excerpts:\n${wiki}\n` : ''}${lore ? `\nLorebook excerpts:\n${lore}\n` : ''}
 Use the supplied material first, then your own knowledge. If you do not reliably know this franchise and no material was given, set "known": false and keep fields short and based only on the notes. Do not invent canon facts.
 ${langInstruction()}
 Return JSON with these keys:
-{"known":true|false,"character":"","world":"setting, factions, rules of the world (max 150 words)","persona":"the character's canon personality, speech style, habits, do's and don'ts (max 150 words)","plot":"key canon storyline beats and what the System wants the player to preserve or achieve (max 150 words)","systemVoice":"how the System talks (one sentence)","pointName":"short name for the points","shop":[{"name":"","desc":"","cost":<int>}],"missions":[{"title":"","desc":"","reward":<int>}]}
+{"known":true|false,"character":"","world":"${worldHint}","persona":"${personaHint}","plot":"${plotHint}",${oc ? '"entry":"where and when in the canon timeline the character enters (1-2 sentences)",' : ''}"systemVoice":"how the System talks (one sentence)","pointName":"short name for the points","shop":[{"name":"","desc":"","cost":<int>}],"missions":[{"title":"","desc":"","reward":<int>}]}
 Give 4-6 shop items and 3 starter missions.`;
     const r = extractJSON(await llm(system, user, 1800));
     if (!r) throw new Error('bad JSON from model');
     const put = (k, v) => { if (v && (overwrite || !String(w[k] || '').trim())) w[k] = String(v); };
-    put('character', r.character); put('world', r.world); put('persona', r.persona); put('plot', r.plot);
+    put('character', r.character); put('entry', r.entry); put('world', r.world); put('persona', r.persona); put('plot', r.plot);
     put('systemVoice', r.systemVoice);
     if (r.pointName && (overwrite || !w.pointName || w.pointName === I18N.en.def_pn || w.pointName === I18N.ru.def_pn)) w.pointName = String(r.pointName);
     if (Array.isArray(r.shop)) put('shopText', r.shop.map((x) => `${x.name} | ${x.desc || ''} | ${parseInt(x.cost) || 50}`).join('\n'));
@@ -472,12 +515,20 @@ const hhmm = (ts) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minu
 function opSlider() {
   return `<input type="range" class="svs-op" min="25" max="100" value="${Math.round(S().opacity * 100)}" aria-label="${t('s_opacity')}">`;
 }
+function chipsHtml() {
+  const s = S(), m = META();
+  if (!s.worlds.length) return '';
+  return `<div class="svs-chips" aria-label="${t('profiles_label')}">${s.worlds.map((x) => {
+    const st = m && m.states && m.states[x.id];
+    return `<button class="svs-chip-btn ${m && x.id === m.worldId ? 'on' : ''}" data-act="w-switch" data-id="${x.id}"><span>${esc(x.name)}</span>${st ? `<em>${st.points}</em>` : ''}</button>`;
+  }).join('')}<button class="svs-chip-btn add" data-act="w-new" aria-label="${t('new')}"><i class="fa-solid fa-plus"></i></button></div>`;
+}
 function ring(points) {
   const C = 2 * Math.PI * 52, ratio = clamp(points / Math.max(200, points), 0, 1);
   const tone = points < 20 ? 'low' : points < 60 ? 'mid' : 'hi';
   return `<div class="svs-ring ${tone}"><svg viewBox="0 0 120 120"><circle class="rb" cx="60" cy="60" r="52"/><circle class="rf" cx="60" cy="60" r="52" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - ratio)).toFixed(1)}" transform="rotate(-90 60 60)"/></svg><div class="svs-ringnum">${points}</div></div>`;
 }
-const noWorld = () => `<div class="svs-empty big"><i class="fa-solid fa-link-slash"></i><p>${t('no_world')}</p>
+const noWorld = () => `${chipsHtml()}<div class="svs-empty big"><i class="fa-solid fa-link-slash"></i><p>${t('no_world')}</p>
   <button class="svs-btn svs-primary" data-act="tab" data-tab="world"><i class="fa-solid fa-globe"></i> ${t('tab_world')}</button></div>`;
 
 function viewStatus() {
@@ -494,9 +545,9 @@ function viewStatus() {
   const lastTxt = last ? (last.kind === 'ooc' ? t('v_ooc') : t('v_in_character')) : t('v_none');
   const nAct = cs.missions.filter((m) => m.status === 'active').length;
   return `
-  <div class="svs-hero">
+  ${chipsHtml()}<div class="svs-hero">
     <div class="svs-badge">${esc((w.character || w.name || '?').trim().charAt(0).toUpperCase())}</div>
-    <div class="svs-herotxt"><small>${t('bound_to')}</small><b>${esc(w.character || w.name)}</b><small>${esc(w.fandom)}</small></div>
+    <div class="svs-herotxt"><small>${t(w.mode === 'oc' ? 'bound_to_oc' : 'bound_to')}</small><b>${esc(w.character || w.name)}</b><small>${esc(w.fandom)}</small></div>
   </div>
   <div class="svs-dash">
     ${ring(cs.points)}
@@ -546,25 +597,31 @@ function viewShop() {
 }
 function viewWorld() {
   const s = S(), cs = CS(), w = currentWorld();
-  const opts = `<option value="">${t('world_none')}</option>` + s.worlds.map((x) => `<option value="${x.id}" ${cs && x.id === cs.worldId ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
+  const opts = `<option value="">${t('world_none')}</option>` + s.worlds.map((x) => `<option value="${x.id}" ${META() && x.id === META().worldId ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
   const lore = `<option value="">${t('lore_none')}</option>` + getLorebookNames().map((n) => `<option ${w && w.lorebook === n ? 'selected' : ''}>${esc(n)}</option>`).join('');
   const inp = (f, label, ph = '') => `<label>${label}<input type="text" data-field="${f}" value="${esc(w[f])}" placeholder="${ph}"></label>`;
   const ta = (f, label, rows = 3) => `<label>${label}<textarea data-field="${f}" rows="${rows}">${esc(w[f])}</textarea></label>`;
+  const oc = !!(w && w.mode === 'oc');
   const sec = (k, icon, title, body) => `<details class="svs-sec" data-sec="${k}" ${openSecs[k] ? 'open' : ''}><summary><i class="fa-solid ${icon}"></i> ${title}</summary><div class="svs-secbody">${body}</div></details>`;
   const editor = w ? `
     ${sec('src', 'fa-book-open', t('sec_source'), `
+      <div class="svs-seg" role="radiogroup" aria-label="${t('mode_label')}">
+        <button class="${oc ? '' : 'on'}" data-act="w-mode" data-mode="canon"><i class="fa-solid fa-user-check"></i> ${t('mode_canon')}</button>
+        <button class="${oc ? 'on' : ''}" data-act="w-mode" data-mode="oc"><i class="fa-solid fa-user-plus"></i> ${t('mode_oc')}</button>
+      </div>
       ${inp('fandom', t('f_fandom'), 'Scum Villain, Naruto, Harry Potter…')}
-      ${inp('character', t('f_character'))}
+      ${inp('character', oc ? t('f_character_oc') : t('f_character'))}
+      ${oc ? inp('entry', t('f_entry')) : ''}
       ${ta('wikiUrls', t('f_wiki'), 2)}
       <label>${t('f_lore')}<span class="svs-inline"><select data-field="lorebook">${lore}</select><button class="svs-btn icon sm" data-act="refresh" title="${t('refresh')}"><i class="fa-solid fa-rotate"></i></button></span></label>
-      ${ta('notes', t('f_notes'), 3)}
+      ${ta('notes', oc ? t('f_notes_oc') : t('f_notes'), oc ? 5 : 3)}
       <label class="svs-switch"><input type="checkbox" id="svs_over" ${overwrite ? 'checked' : ''}><i></i><span>${t('overwrite')}</span></label>
       <button class="svs-btn svs-primary wide" data-act="fill" ${busy ? 'disabled' : ''}><i class="fa-solid ${busy ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'}"></i> ${busy ? t('filling') : t('fill_ai')}</button>`)}
     ${sec('prof', 'fa-id-card', t('sec_profile'), `
       ${inp('name', t('f_name'))}
       ${ta('world', t('f_world'), 4)}
-      ${ta('persona', t('f_persona'), 4)}
-      ${ta('plot', t('f_plot'), 4)}
+      ${ta('persona', oc ? t('f_persona_oc') : t('f_persona'), 4)}
+      ${ta('plot', oc ? t('f_plot_oc') : t('f_plot'), 5)}
       ${inp('systemVoice', t('f_voice'))}
       ${inp('pointName', t('f_points'))}`)}
     ${sec('shop', 'fa-store', t('sec_shop'), `${ta('shopText', t('f_shop'), 4)}${ta('missionsText', t('f_missions'), 4)}`)}` : '';
@@ -578,6 +635,7 @@ function viewWorld() {
     <button class="svs-btn sm" data-act="w-imp"><i class="fa-solid fa-file-import"></i> ${t('import')}</button>
     <button class="svs-btn sm ghost svs-danger" data-act="w-del" ${w ? '' : 'disabled'}><i class="fa-regular fa-trash-can"></i> ${t('del')}</button>
   </div>
+  <small class="svs-hint">${t('save_note')}</small>
   <input type="file" id="svs_file" accept=".json,application/json" hidden>
   ${editor}`;
 }
@@ -605,6 +663,13 @@ function viewSettings() {
     ${sw('svs_fabchk', s.showFab, t('s_fab'))}
     <label>${t('s_fabsize')} <b class="svs-fabval">${s.fabSize}px</b><input type="range" id="svs_fabsize" min="28" max="64" value="${s.fabSize}"></label>
     ${sw('svs_toast', s.toasts, t('s_toast'))}
+  </div>
+  <div class="svs-group">
+    <div class="svs-gh"><i class="fa-regular fa-message"></i> ${t('sec_chat')}</div>
+    ${sw('svs_chatpop', s.chatPopup, t('s_chatpop'))}
+    <label>${t('s_chatplace')}${sel('svs_chatplace', s.chatPlace, [['top', t('place_top')], ['middle', t('place_middle')], ['bottom', t('place_bottom')]])}</label>
+    <label>${t('s_chattarget')}${sel('svs_chattarget', s.chatTarget, [['reply', t('target_reply')], ['mine', t('target_mine')]])}</label>
+    ${sw('svs_chatopen', s.chatOpen, t('s_chatopen'))}
   </div>
   <button class="svs-btn wide" data-act="tab" data-tab="diag"><i class="fa-solid fa-stethoscope"></i> ${t('diag')}</button>
   <button class="svs-btn ghost wide" data-act="reset-fab"><i class="fa-solid fa-location-crosshairs"></i> ${t('diag_reset_fab')}</button>`;
@@ -662,8 +727,9 @@ async function runDiag() {
   await safe('Chat', async () => {
     const c = ctx(), cs = CS(), w = currentWorld();
     add(Array.isArray(c.chat), 'Chat', `${c.chat?.length ?? '?'} messages, user "${c.name1}", character "${c.name2 ?? '?'}"${c.groupId ? ', group chat' : ''}`);
-    add(!!cs, 'Chat metadata', cs ? 'available' : 'unavailable — open a chat first');
+    add(!!META(), 'Chat metadata', META() ? 'available' : 'unavailable — open a chat first');
     add(w ? true : 'warn', 'World bound to this chat', w ? `"${w.name}" · character "${w.character || '(empty)'}" · ${cs.points} ${w.pointName}` : 'NONE — the System stays silent until you pick/create one in the World tab');
+    add(true, 'In-chat popups', `${document.querySelectorAll('.' + POP).length} in the DOM · placement ${S().chatPlace} · attach to ${S().chatTarget} · enabled ${S().chatPopup}`);
     add(lastUserIndex() >= 0 ? true : 'warn', 'Player message to evaluate', lastUserIndex() >= 0 ? `index ${lastUserIndex()}, last evaluated ${cs?.lastUserIdx}` : 'no user message yet');
   });
   await safe('Events', async () => {
@@ -730,6 +796,63 @@ async function copyText(txt) {
 }
 window.__svsDiag = async () => { await runDiag(); console.log(diagText()); return diagText(); };
 
+/* ------------------------------------------------------------ in-chat popups */
+/* Purely visual: nodes are drawn into the chat DOM from the saved log. Nothing is written to the chat or the prompt. */
+const POP = 'svs-chatpop';
+const openMap = new Map();
+let injT = 0;
+function scheduleInject() { clearTimeout(injT); injT = setTimeout(injectAll, 120); }
+function popEntries() {
+  const map = new Map(), cs = CS();
+  if (!cs) return map;
+  for (const e of cs.log) {
+    if (e.mes === undefined || e.kind === 'ask') continue;
+    if (!map.has(e.mes)) map.set(e.mes, []);
+    map.get(e.mes).push(e);
+  }
+  return map;
+}
+const popSig = (list) => `${list.length}:${list[list.length - 1].time}:${S().lang}`;
+function popHtml(list) {
+  const total = list.reduce((a, e) => a + (e.delta || 0), 0);
+  const last = list[list.length - 1];
+  const k = ICON[last.kind] ? last.kind : 'info';
+  const pill = total ? `<span class="svs-delta ${total > 0 ? 'pos' : 'neg'}">${total > 0 ? '+' : ''}${total}</span>` : '';
+  const rows = list.map((e) => {
+    const kk = ICON[e.kind] ? e.kind : 'info';
+    const d = e.delta ? `<span class="svs-delta ${e.delta > 0 ? 'pos' : 'neg'}">${e.delta > 0 ? '+' : ''}${e.delta}</span>` : '';
+    return `<div class="svs-pe k-${kk}"><i class="fa-solid ${ICON[kk]}"></i><span class="svs-pt">【 ${esc(e.text)} 】</span>${d}</div>`;
+  }).join('');
+  return `<summary><span class="svs-cn">系统:</span><b>${esc(t('title'))}</b><span class="svs-ps-text k-${k}">${esc(last.text)}</span>${pill}<i class="fa-solid fa-chevron-down svs-chev"></i></summary><div class="svs-pbody">${rows}</div>`;
+}
+function injectAll() {
+  try {
+    const chatEl = document.getElementById('chat');
+    if (!chatEl) return;
+    const s = S(), w = currentWorld();
+    const map = (s.enabled && s.chatPopup && w) ? popEntries() : new Map();
+    chatEl.querySelectorAll('.' + POP).forEach((n) => {
+      const list = map.get(Number(n.dataset.mes));
+      if (!list || n.dataset.place !== s.chatPlace || n.dataset.sig !== popSig(list)) n.remove();
+    });
+    for (const [idx, list] of map) {
+      const msg = chatEl.querySelector(`.mes[mesid="${idx}"]`);
+      if (!msg || msg.querySelector('.' + POP)) continue;
+      const text = msg.querySelector('.mes_text');
+      if (!text) continue;
+      const node = document.createElement('details');
+      node.className = POP; node.dataset.mes = String(idx); node.dataset.place = s.chatPlace; node.dataset.sig = popSig(list);
+      node.open = openMap.has(idx) ? openMap.get(idx) : !!s.chatOpen;
+      node.innerHTML = popHtml(list);
+      if (s.chatPlace === 'top') text.before(node);
+      else if (s.chatPlace === 'middle') {
+        const kids = [...text.children];
+        if (kids.length >= 2) kids[Math.ceil(kids.length / 2) - 1].after(node); else text.after(node);
+      } else text.after(node);
+    }
+  } catch (e) { logErr('injectAll', e); }
+}
+
 /* ------------------------------------------------- placement helpers */
 /* Put an element in the browser top layer (above every page element, immune to odd ancestors). */
 function syncTop(el, visible) {
@@ -743,7 +866,7 @@ function syncTop(el, visible) {
 function applyFab() {
   const f = document.getElementById('svs_fab'); if (!f) return;
   const z = clamp(Number(S().fabSize) || 38, 28, 64);
-  f.style.width = z + 'px'; f.style.height = z + 'px'; f.style.borderRadius = Math.round(z * 0.3) + 'px';
+  f.style.width = z + 'px'; f.style.height = z + 'px';
   const sp = f.querySelector('span'); if (sp) sp.style.fontSize = Math.round(z * 0.52) + 'px';
 }
 /* Close SillyTavern's own open side drawers so they don't sit on top of the System. */
@@ -779,8 +902,9 @@ function render() {
     if (!$('#svs_panel').length) return;
     const tabs = ['status', 'missions', 'shop', 'world', 'settings'];
     $('#svs_tabs').html(tabs.map((k) => `<button class="svs-tab ${s.tab === k ? 'on' : ''}" data-act="tab" data-tab="${k}" title="${t('tab_' + k)}"><i class="fa-solid ${TAB_ICON[k]}"></i><span>${t('tab_' + k)}</span></button>`).join(''));
-    $('#svs_title').text(`【 ${t('title')} 】`);
+    $('#svs_title').text(t('title'));
     const cs = CS(), w = currentWorld();
+    $('#svs_foot').html(`<span class="svs-led"></span><span>${t('online')}</span><span class="svs-cn grow">系统初步激活</span><span class="svs-foot-w">${w ? esc(w.name) : t('foot_wait')}</span>`);
     $('#svs_pts').html(w && cs ? `<i class="fa-solid fa-coins"></i> ${cs.points}` : '');
     const views = { status: viewStatus, missions: viewMissions, shop: viewShop, world: viewWorld, settings: viewSettings, diag: viewDiag };
     const body = document.getElementById('svs_body');
@@ -794,6 +918,7 @@ function render() {
     if (showPanel) layoutPanel();
     applyFab();
     $('#svs_panel,#svs_fab').css('opacity', s.opacity);
+    scheduleInject();
   } catch (e) { logErr('render', e); }
 }
 
@@ -885,10 +1010,12 @@ function buildUI() {
 
   step('panel', () => {
     $('body').append(`
-      <div id="svs_fab" class="svs-hidden" title="System"><span>S</span></div>
+      <div id="svs_fab" class="svs-hidden" title="System"><i class="svs-ff"></i><span>S</span></div>
       <div id="svs_panel" class="svs-hidden" role="dialog" aria-label="System">
+        <div class="svs-frame"></div>
+        <div class="svs-inner">
         <div class="svs-head">
-          <span id="svs_title"></span><span id="svs_pts"></span>
+          <span class="svs-cn">系统:</span><span id="svs_title"></span><span id="svs_pts"></span>
           <span class="svs-spacer"></span>
           <span class="svs-oprow" title="Opacity"><i class="fa-regular fa-eye"></i>${opSlider()}</span>
           <button id="svs_diagbtn" class="svs-x" data-act="diag-toggle" aria-label="Diagnostics"><i class="fa-solid fa-stethoscope"></i></button>
@@ -896,6 +1023,8 @@ function buildUI() {
         </div>
         <div id="svs_tabs" class="svs-tabs"></div>
         <div id="svs_body" class="svs-body"></div>
+        <div id="svs_foot" class="svs-foot"></div>
+        </div>
       </div>`);
     if (s.fabPos) $('#svs_fab').css({ left: s.fabPos.left, top: s.fabPos.top, right: 'auto', bottom: 'auto' });
     makeDraggable(document.getElementById('svs_fab'), () => openPanel(!S().open));
@@ -932,8 +1061,8 @@ function buildUI() {
           case 'ask': askSystem(); break;
           case 'reset':
             if (cs && await confirmBox(t('confirm_reset'))) {
-              Object.assign(cs, { points: 100, log: [], missions: [], inventory: [], lastUserIdx: -1 });
-              bindWorld(cs.worldId);
+              const m = META(); m.states[m.worldId] = blankState();
+              bindWorld(m.worldId);
             }
             break;
           case 'm-ai': aiMission(); break;
@@ -955,10 +1084,12 @@ function buildUI() {
             if (it) pushLog(cs, { kind: 'info', text: t('used_item', { item: it.name }) });
             saveChat(); render(); break;
           }
+          case 'w-switch': bindWorld(el.dataset.id); break;
+          case 'w-mode': if (w) { w.mode = el.dataset.mode === 'oc' ? 'oc' : 'canon'; save(); render(); } break;
           case 'w-new': { const nw = newWorld(); st.worlds.push(nw); save(); bindWorld(nw.id); break; }
           case 'w-dup': { const nw = newWorld({ ...w, id: uid('w'), name: w.name + ' (2)' }); st.worlds.push(nw); save(); bindWorld(nw.id); break; }
           case 'w-del':
-            if (w && await confirmBox(t('confirm_del'))) { st.worlds = st.worlds.filter((x) => x.id !== w.id); save(); bindWorld(''); }
+            if (w && await confirmBox(t('confirm_del'))) { const m = META(); if (m) delete m.states[w.id]; st.worlds = st.worlds.filter((x) => x.id !== w.id); save(); bindWorld(''); }
             break;
           case 'w-exp': download(`system-world-${(w.name || 'world').replace(/[^\w-]+/g, '_')}.json`, { type: 'svs-world-profile', version: 1, worlds: [w] }); break;
           case 'w-expall': download('system-worlds.json', { type: 'svs-world-profile', version: 1, worlds: st.worlds }); break;
@@ -1003,7 +1134,11 @@ function buildUI() {
       svs_ctxn: (el) => { S().ctxMessages = clamp(parseInt(el.value) || 6, 2, 30); },
       svs_strict: (el) => { S().strict = el.value; },
       svs_fabchk: (el) => { S().showFab = el.checked; },
-      svs_toast: (el) => { S().toasts = el.checked; }
+      svs_toast: (el) => { S().toasts = el.checked; },
+      svs_chatpop: (el) => { S().chatPopup = el.checked; },
+      svs_chatplace: (el) => { S().chatPlace = el.value; },
+      svs_chattarget: (el) => { S().chatTarget = el.value; },
+      svs_chatopen: (el) => { S().chatOpen = el.checked; openMap.clear(); document.querySelectorAll('.' + POP).forEach((n) => n.remove()); }
     };
     panelEl.addEventListener('input', (e) => {
       const el = e.target;
@@ -1060,8 +1195,22 @@ function init() {
     eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, auto('rendered'));
     if (event_types.GENERATION_ENDED) eventSource.on(event_types.GENERATION_ENDED, auto('gen_ended'));
     eventSource.on(event_types.CHAT_CHANGED, () => { hit('chat_changed'); askDraft = ''; render(); });
+    for (const k of ['CHARACTER_MESSAGE_RENDERED', 'USER_MESSAGE_RENDERED', 'MESSAGE_UPDATED', 'MESSAGE_EDITED', 'MESSAGE_SWIPED', 'MESSAGE_DELETED', 'MORE_MESSAGES_LOADED']) {
+      if (event_types[k]) eventSource.on(event_types[k], scheduleInject);
+    }
     dbg.listeners = true;
   } catch (e) { logErr('event registration', e); }
+  try {
+    const chatEl = document.getElementById('chat');
+    if (chatEl) {
+      new MutationObserver(() => scheduleInject()).observe(chatEl, { childList: true, subtree: true });
+      chatEl.addEventListener('toggle', (e) => {
+        const n = e.target;
+        if (n && n.classList && n.classList.contains(POP)) openMap.set(Number(n.dataset.mes), n.open);
+      }, true);
+    }
+  } catch (e) { logErr('chat observer', e); }
+  scheduleInject();
   console.log(`[System] v${VERSION} loaded`);
 }
 try { jQuery(init); } catch (e) { console.error('[System] fatal init error', e); }

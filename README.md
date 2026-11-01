@@ -20,3 +20,9 @@ Tap the stethoscope icon in the panel header (or Extensions → The System → D
 It checks the DOM, events, settings, chat state, Connection Manager, a live model call and Fandom access,
 then lets you copy a plain-text report. From the browser console you can also run `__svsDiag()`.
 If the floating button is off screen: Settings → Reset button position.
+
+## v1.2 features
+- **Profiles**: each world profile keeps its own points, missions, items and log inside every chat. Switch from the chip bar on the Status tab or the World tab; "Save as copy" clones a profile.
+- **Role**: bind to a *canon character* or insert an *original character* (own story, entry point in the canon timeline). The System's prompts and the AI fill adapt to the mode.
+- **In-chat popup**: a collapsible System window drawn in the chat (top / middle / bottom of a message; attach to the character's reply or to your message). It is display-only: nothing is written into the chat or the prompt, so the character never knows.
+- **HUD look** modelled on a holographic system window.
