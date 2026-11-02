@@ -56,7 +56,7 @@ en: {
   sec_chat: 'In-chat popup', s_chatpop: 'Show System popups in the chat', s_chatplace: 'Popup placement', place_top: 'Top of the message',
   place_middle: 'Middle of the message', place_bottom: 'Bottom of the message', s_chattarget: 'Attach popup to', target_reply: 'Character reply', target_mine: 'My message',
   s_chatopen: 'Expanded by default', profiles_label: 'Profiles',
-  sec_look: 'Appearance', s_blur: 'Background blur', s_round: 'Rounded corners', foot_active: 'System activated',
+  sec_look: 'Appearance', s_blur: 'Background blur (also softens the dot pattern)', s_pattern: 'Decorative dot pattern', s_round: 'Rounded corners', foot_active: 'System activated',
   sec_avatar: 'Avatar', s_avatar: 'Avatar source', av_persona: 'My persona (active chat)', av_char: 'Chat character', av_custom: 'Custom image',
   av_choose: 'Choose image', av_remove: 'Remove', fab_reset_done: 'Floating button reset.', av_fail: 'Could not load that image.',
   sec_thischat: 'This chat', s_chaton: 'System active in this chat', s_newoff: 'Start new chats switched off',
@@ -68,6 +68,11 @@ en: {
   death: '{pn} dropped to zero or below. Punishment executed: host "{char}" is erased and sent back. Connection terminated.',
   dead_title: 'Host terminated', dead_text: 'Your {pn} reached zero and the System cut the link. Restart to be bound again with a fresh balance.',
   dead_restart: 'Restart (bind again)', st_risk: 'Expulsion risk', risk_on: 'ON', st_deaths: 'Terminations',
+  s_punish: 'Punishment quests (instead of death)',
+  s_punish_hint: 'On: the System punishes clear out-of-character acts and a zero balance with special penalty quests. Completing one restores points; declining it costs half of its reward. While on, it replaces the death risk.',
+  penalty: 'Penalty', penalty_issued: 'Penalty quest issued: {title}. {desc}', penalty_fine: 'Penalty quest declined: {title}. Fine: {fine}.',
+  punish_warn: 'Warning: clear out-of-character acts will be punished with penalty quests.', st_punish: 'Punishment',
+  pen_title: 'Penalty: return to the role', pen_desc: 'For your next messages act exactly as {char} would. No exceptions.',
   undo: 'Undo', m_completed: 'Completed: {title} (+{reward})', m_abandoned: 'Abandoned: {title}', m_reopened: 'Mission reopened: {title}',
   s_risk: 'Death / expulsion risk (points at zero or below end the run)',
   s_risk_hint: 'On: the System warns you at the start and when your balance is low. If points reach zero or below it erases you and locks the profile until you restart it. Off: points simply stop at zero.'
@@ -120,7 +125,7 @@ ru: {
   sec_chat: 'Окно в чате', s_chatpop: 'Показывать окна Системы в чате', s_chatplace: 'Расположение окна', place_top: 'Сверху сообщения',
   place_middle: 'В середине сообщения', place_bottom: 'Снизу сообщения', s_chattarget: 'Прикреплять окно к', target_reply: 'Ответу персонажа', target_mine: 'Моему сообщению',
   s_chatopen: 'Развёрнуто по умолчанию', profiles_label: 'Профили',
-  sec_look: 'Оформление', s_blur: 'Размытие фона', s_round: 'Скруглённые углы', foot_active: 'Система активирована',
+  sec_look: 'Оформление', s_blur: 'Размытие фона (смягчает и узор из точек)', s_pattern: 'Декоративный узор из точек', s_round: 'Скруглённые углы', foot_active: 'Система активирована',
   sec_avatar: 'Аватар', s_avatar: 'Источник аватара', av_persona: 'Моя персона (активный чат)', av_char: 'Персонаж чата', av_custom: 'Своё изображение',
   av_choose: 'Выбрать изображение', av_remove: 'Удалить', fab_reset_done: 'Плавающая кнопка сброшена.', av_fail: 'Не удалось загрузить изображение.',
   sec_thischat: 'Этот чат', s_chaton: 'Система активна в этом чате', s_newoff: 'Новые чаты начинаются выключенными',
@@ -132,6 +137,11 @@ ru: {
   death: '{pn} упали до нуля или ниже. Наказание приведено в исполнение: хост «{char}» стёрт и отправлен обратно. Соединение разорвано.',
   dead_title: 'Хост уничтожен', dead_text: 'Ваши {pn} достигли нуля, и Система разорвала связь. Перезапустите, чтобы привязаться заново с новым балансом.',
   dead_restart: 'Перезапуск (привязаться заново)', st_risk: 'Риск изгнания', risk_on: 'ВКЛ', st_deaths: 'Уничтожений',
+  s_punish: 'Штрафные задания (вместо смерти)',
+  s_punish_hint: 'Включено: Система наказывает явный выход из образа и нулевой баланс особыми штрафными заданиями. Выполнение возвращает очки, отказ стоит половину награды. Пока включено, заменяет риск смерти.',
+  penalty: 'Штраф', penalty_issued: 'Выдано штрафное задание: {title}. {desc}', penalty_fine: 'Отказ от штрафного задания: {title}. Штраф: {fine}.',
+  punish_warn: 'Предупреждение: явный выход из образа будет наказываться штрафными заданиями.', st_punish: 'Наказания',
+  pen_title: 'Штраф: вернуться к роли', pen_desc: 'В ближайших сообщениях действуйте строго так, как действовал бы {char}. Без исключений.',
   undo: 'Отменить', m_completed: 'Выполнено: {title} (+{reward})', m_abandoned: 'Отказ от задания: {title}', m_reopened: 'Задание возвращено: {title}',
   s_risk: 'Риск смерти / изгнания (очки на нуле или ниже завершают прохождение)',
   s_risk_hint: 'Включено: Система предупреждает в начале и при низком балансе. Если очки достигают нуля или ниже, она стирает вас и блокирует профиль, пока вы его не перезапустите. Выключено: очки просто останавливаются на нуле.'
@@ -145,7 +155,7 @@ function t(k, v) {
 }
 
 /* ------------------------------------------------------------ debug store */
-const VERSION = '1.5.1';
+const VERSION = '1.6.1';
 const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
 function logErr(where, e) {
   const msg = (e && (e.stack || e.message)) || String(e);
@@ -159,7 +169,7 @@ const hit = (name) => { dbg.events[name] = { n: (dbg.events[name]?.n || 0) + 1, 
 const DEFAULTS = {
   enabled: true, lang: 'en', outLang: 'ui', opacity: 0.95, profileId: '', autoEval: true,
   ctxMessages: 6, strict: 'normal', showFab: true, toasts: true, open: false, tab: 'status',
-  fabPos: null, fabSize: 38, chatPopup: true, chatPlace: 'bottom', chatTarget: 'reply', chatOpen: false, blur: 8, rounded: false, avatarMode: 'persona', avatarCustom: '', newChatsOff: false, deathRisk: false, worlds: []
+  fabPos: null, fabSize: 38, chatPopup: true, chatPlace: 'bottom', chatTarget: 'reply', chatOpen: false, blur: 8, rounded: false, avatarMode: 'persona', avatarCustom: '', newChatsOff: false, deathRisk: false, punishQuests: false, pattern: true, worlds: []
 };
 function S() {
   const { extensionSettings } = ctx();
@@ -333,7 +343,7 @@ ${oc ? 'Original character persona, background & behaviour' : 'Character persona
 ${oc ? "The original character's own story & goals" : 'Original storyline / System goals'}: ${w.plot || 'n/a'}
 Your voice: ${w.systemVoice || t('default_voice')}. Notices are short (1-2 sentences), like 【 ... 】 system notices, but write the text WITHOUT the brackets.
 Scoring: ${strict}
-${S().deathRisk ? `Death/expulsion rule is ACTIVE: if the player's ${pn} fall to zero or below, the player is erased by the System / sent back. Make the stakes feel real and warn the player clearly when the balance is low.\n` : ''}${langInstruction()}`;
+${S().punishQuests ? 'Punishment mode is ACTIVE: out-of-character acts and a zero balance are punished with special penalty quests instead of death.\n' : ''}${lethal() ? `Death/expulsion rule is ACTIVE: if the player's ${pn} fall to zero or below, the player is erased by the System / sent back. Make the stakes feel real and warn the player clearly when the balance is low.\n` : ''}${langInstruction()}`;
 }
 
 /* ---------------------------------------------------------------- state */
@@ -353,9 +363,29 @@ function notify(text, delta) {
     window.toastr.info(`【 ${text} 】${d}`, t('title'));
   }
 }
+/* Death only applies when punishment quests are off: punishment replaces death. */
+const lethal = () => !!(S().deathRisk && !S().punishQuests);
+function addPenalty(cs, p, w) {
+  const m = { id: uid('m'), status: 'active', penalty: true, title: String(p.title), desc: String(p.desc || ''), reward: clamp(parseInt(p.reward) || 30, 10, 80) };
+  cs.missions.push(m);
+  const txt = t('penalty_issued', { title: m.title, desc: m.desc });
+  pushLog(cs, { kind: 'penalty', text: txt.trim() });
+  notify(txt);
+}
+function failMission(m) {
+  const cs = CS();
+  m.status = 'failed';
+  if (m.penalty && cs) {
+    const fine = Math.ceil(m.reward / 2);
+    cs.points = lethal() ? cs.points - fine : Math.max(0, cs.points - fine);
+    m.fine = fine;
+    pushLog(cs, { kind: 'ooc', text: t('penalty_fine', { title: m.title, fine }), delta: -fine, mid: m.id, fine: true });
+  }
+}
 function welcomeText(w, cs) {
   let txt = t(w.mode === 'oc' ? 'welcome_oc' : 'welcome', { char: w.character || w.name, pts: cs.points, pn: w.pointName });
-  if (S().deathRisk) txt += ' ' + t('risk_warn', { pn: w.pointName });
+  if (S().punishQuests) txt += ' ' + t('punish_warn');
+  else if (S().deathRisk) txt += ' ' + t('risk_warn', { pn: w.pointName });
   return txt;
 }
 function bindWorld(id) {
@@ -378,17 +408,25 @@ function applyResult(w, cs, r) {
   if (verdict === 'ooc' && delta > 0) delta = -delta;
   if (verdict === 'in_character' && delta < 0) delta = -delta;
   if (verdict === 'neutral') delta = 0;
-  cs.points = S().deathRisk ? cs.points + delta : Math.max(0, cs.points + delta);
+  cs.points = lethal() ? cs.points + delta : Math.max(0, cs.points + delta);
   if (r.message) { pushLog(cs, { kind: verdict, text: String(r.message), delta }); notify(String(r.message), delta); }
   for (const u of Array.isArray(r.missions) ? r.missions : []) {
     const m = cs.missions.find((x) => x.id === u.id && x.status === 'active');
     if (!m) continue;
     if (u.status === 'done') completeMission(m, true);
-    else if (u.status === 'failed') m.status = 'failed';
+    else if (u.status === 'failed') failMission(m);
   }
   const nm = r.new_mission;
   if (nm && nm.title) addMission(cs, nm);
-  const risk = S().deathRisk;
+  if (S().punishQuests) {
+    const hasPen = cs.missions.some((x) => x.status === 'active' && x.penalty);
+    const p = r.punishment;
+    if (!hasPen) {
+      if (verdict === 'ooc' && p && p.title) addPenalty(cs, p, w);
+      else if (cs.points <= 0 && (prev > 0 || delta < 0)) addPenalty(cs, { title: t('pen_title'), desc: t('pen_desc', { char: w.character || w.name }), reward: 30 }, w);
+    }
+  }
+  const risk = lethal();
   if (risk && cs.points <= 0 && !cs.dead && (prev > 0 || delta < 0)) terminate(w, cs);
   else if (risk && cs.points > 0 && cs.points <= 25 && prev > 25) {
     const txt = t('risk_low', { pn: w.pointName, pts: cs.points });
@@ -438,9 +476,15 @@ function undoMission(id) {
   if (!m || m.status === 'active') return;
   if (m.status === 'done') {
     cs.points -= (m.paid ?? m.reward);
-    if (!S().deathRisk) cs.points = Math.max(0, cs.points);
+    if (!lethal()) cs.points = Math.max(0, cs.points);
     const i = cs.log.findIndex((e) => e.kind === 'reward' && e.mid === m.id);
     if (i >= 0) cs.log.splice(i, 1);
+  }
+  if (m.status === 'failed' && m.fine) {
+    cs.points += m.fine;
+    const i = cs.log.findIndex((e) => e.fine && e.mid === m.id);
+    if (i >= 0) cs.log.splice(i, 1);
+    delete m.fine;
   }
   m.status = 'active'; delete m.paid;
   if (undoBanner && undoBanner.id === id) undoBanner = null;
@@ -463,7 +507,10 @@ async function evaluate(manual) {
   busy = true; render();
   try {
     const missions = cs.missions.filter((m) => m.status === 'active')
-      .map((m) => `- [${m.id}] ${m.title}: ${m.desc} (${t('reward')} ${m.reward})`).join('\n') || '(none)';
+      .map((m) => `- [${m.id}] ${m.penalty ? 'PENALTY ' : ''}${m.title}: ${m.desc} (${t('reward')} ${m.reward})`).join('\n') || '(none)';
+    const pun = S().punishQuests;
+    const punishSchema = pun ? ',"punishment":null or {"title":"","desc":"","reward":<integer 10..80>}' : '';
+    const punishNote = pun ? `\nPunishment mode is ON. Only when the verdict is "ooc" (a clear out-of-character act) and there is no active PENALTY quest, you may issue ONE penalty quest in "punishment": a short in-fiction task that makes the player act in character or make amends. It must be harmless, non-sexual and never about self-harm. Otherwise set punishment to null.` : '';
     const user = `Current ${w.pointName}: ${cs.points}
 Active missions:
 ${missions}
@@ -472,8 +519,8 @@ Recent chat (the player's latest message is marked with >>>):
 ${transcript()}
 
 Evaluate ONLY the player's latest message (>>>), using the character's reply as context. Respond with ONLY a JSON object, no markdown:
-{"verdict":"in_character"|"ooc"|"neutral","delta":<integer -60..60>,"message":"<system notice>","missions":[{"id":"<mission id>","status":"done"|"failed"}],"new_mission":null or {"title":"","desc":"","reward":<integer>}}
-delta must be 0 for neutral. Offer new_mission only if there are no active missions or the story clearly opens an opportunity.`;
+{"verdict":"in_character"|"ooc"|"neutral","delta":<integer -60..60>,"message":"<system notice>","missions":[{"id":"<mission id>","status":"done"|"failed"}],"new_mission":null or {"title":"","desc":"","reward":<integer>}${punishSchema}}
+delta must be 0 for neutral. Offer new_mission only if there are no active missions or the story clearly opens an opportunity.${punishNote}`;
     const raw = await llm(systemPrompt(w), user, 700);
     const r = extractJSON(raw);
     attachIdx = S().chatTarget === 'mine' ? idx : Math.max(0, (ctx().chat || []).length - 1);
@@ -591,7 +638,7 @@ async function confirmBox(msg) {
 
 /* ------------------------------------------------------------------ views */
 const openSecs = { src: true, prof: true, shop: false };
-const ICON = { death: 'fa-skull', in_character: 'fa-circle-check', ooc: 'fa-triangle-exclamation', reward: 'fa-gift', info: 'fa-circle-info', ask: 'fa-comment-dots', neutral: 'fa-minus' };
+const ICON = { penalty: 'fa-gavel', death: 'fa-skull', in_character: 'fa-circle-check', ooc: 'fa-triangle-exclamation', reward: 'fa-gift', info: 'fa-circle-info', ask: 'fa-comment-dots', neutral: 'fa-minus' };
 const TAB_ICON = { status: 'fa-gauge-high', missions: 'fa-list-check', shop: 'fa-store', world: 'fa-globe', settings: 'fa-sliders', diag: 'fa-stethoscope' };
 const hhmm = (ts) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -644,7 +691,8 @@ function viewStatus() {
       <div class="svs-stat"><span>${t('st_missions')}</span><b>${nAct}</b></div>
       <div class="svs-stat"><span>${t('st_items')}</span><b>${cs.inventory.length}</b></div>
       <div class="svs-stat"><span>${t('st_last')}</span><b class="${last ? (last.kind === 'ooc' ? 'neg' : 'pos') : ''}">${lastTxt}</b></div>
-      ${S().deathRisk ? `<div class="svs-stat"><span>${t('st_risk')}</span><b class="neg">${t('risk_on')}</b></div>` : ''}
+      ${S().punishQuests ? `<div class="svs-stat"><span>${t('st_punish')}</span><b class="neg">${t('risk_on')}</b></div>` : ''}
+      ${lethal() ? `<div class="svs-stat"><span>${t('st_risk')}</span><b class="neg">${t('risk_on')}</b></div>` : ''}
       ${cs.deaths ? `<div class="svs-stat"><span>${t('st_deaths')}</span><b class="neg">${cs.deaths}</b></div>` : ''}
     </div>
   </div>
@@ -660,11 +708,12 @@ function viewMissions() {
   if (!w || !cs) return noWorld();
   const act = cs.missions.filter((m) => m.status === 'active');
   const hist = cs.missions.filter((m) => m.status !== 'active').reverse();
-  const card = (m, a) => `<div class="svs-card ${a ? '' : 'dim'}"><div class="svs-cardhead"><b>${esc(m.title)}</b>
+  act.sort((x, y) => (y.penalty ? 1 : 0) - (x.penalty ? 1 : 0));
+  const card = (m, a) => `<div class="svs-card ${a ? '' : 'dim'} ${m.penalty ? 'pen' : ''}"><div class="svs-cardhead"><b>${m.penalty ? `<span class="svs-pen"><i class="fa-solid fa-gavel"></i> ${t('penalty')}</span> ` : ''}${esc(m.title)}</b>
       <span class="svs-chip gold"><i class="fa-solid fa-coins"></i> ${m.reward}</span></div>
       ${m.desc ? `<p>${esc(m.desc)}</p>` : ''}
       <div class="svs-cardrow">${a ? `<button class="svs-btn sm" data-act="m-done" data-id="${m.id}"><i class="fa-solid fa-check"></i> ${t('complete')}</button>
-      <button class="svs-btn sm ghost svs-danger" data-act="m-drop" data-id="${m.id}">${t('abandon')}</button>`
+      <button class="svs-btn sm ghost svs-danger" data-act="m-drop" data-id="${m.id}">${t('abandon')}${m.penalty ? ' (−' + Math.ceil(m.reward / 2) + ')' : ''}</button>`
         : `<span class="svs-st-${m.status}"><i class="fa-solid ${m.status === 'done' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i></span>
       ${cs.dead ? '' : `<button class="svs-btn sm ghost" data-act="m-undo" data-id="${m.id}"><i class="fa-solid fa-rotate-left"></i> ${t('undo')}</button>`}`}</div></div>`;
   const banner = undoBanner && !cs.dead && cs.missions.some((x) => x.id === undoBanner.id && x.status !== 'active')
@@ -757,6 +806,7 @@ function viewSettings() {
     <div class="svs-gh"><i class="fa-solid fa-palette"></i> ${t('sec_look')}</div>
     <label>${t('s_opacity')} <b class="svs-opval">${Math.round(s.opacity * 100)}%</b>${opSlider()}</label>
     <label>${t('s_blur')} <b class="svs-blurval">${s.blur}px</b><input type="range" id="svs_blur" min="0" max="30" value="${s.blur}"></label>
+    ${sw('svs_pattern', s.pattern, t('s_pattern'))}
     ${sw('svs_round', s.rounded, t('s_round'))}
     ${sw('svs_fabchk', s.showFab, t('s_fab'))}
     <label>${t('s_fabsize')} <b class="svs-fabval">${s.fabSize}px</b><input type="range" id="svs_fabsize" min="28" max="64" value="${s.fabSize}"></label>
@@ -783,6 +833,8 @@ function viewSettings() {
     ${sw('svs_toast', s.toasts, t('s_toast'))}
     ${sw('svs_risk', s.deathRisk, t('s_risk'))}
     <small class="svs-hint">${t('s_risk_hint')}</small>
+    ${sw('svs_punish', s.punishQuests, t('s_punish'))}
+    <small class="svs-hint">${t('s_punish_hint')}</small>
   </div>
   <div class="svs-group">
     <div class="svs-gh"><i class="fa-regular fa-message"></i> ${t('sec_chat')}</div>
@@ -846,7 +898,7 @@ async function runDiag() {
   });
   await safe('Settings', async () => {
     const s = S();
-    add(true, 'Settings', `enabled=${s.enabled}, lang=${s.lang}, opacity=${s.opacity}, autoEval=${s.autoEval}, ctx=${s.ctxMessages}, worlds=${s.worlds.length}, deathRisk=${s.deathRisk}`);
+    add(true, 'Settings', `enabled=${s.enabled}, lang=${s.lang}, opacity=${s.opacity}, autoEval=${s.autoEval}, ctx=${s.ctxMessages}, worlds=${s.worlds.length}, deathRisk=${s.deathRisk}, punishQuests=${s.punishQuests}`);
   });
   await safe('Chat', async () => {
     const c = ctx(), cs = CS(), w = currentWorld();
@@ -997,6 +1049,8 @@ function applyLook() {
   const b = clamp(Number(s.blur) || 0, 0, 30), g1 = clamp(0.92 - 0.02 * b, 0.42, 0.92);
   const root = document.documentElement.style;
   root.setProperty('--svs-blur', b + 'px');
+  root.setProperty('--svs-pat', (b * 0.5).toFixed(1) + 'px'); // the circles/squares pattern is softened by the same slider
+  document.body.classList.toggle('svs-nopattern', !s.pattern);
   root.setProperty('--svs-g1', g1.toFixed(2)); root.setProperty('--svs-g2', (g1 - 0.02).toFixed(2)); root.setProperty('--svs-g3', Math.max(0.36, g1 - 0.08).toFixed(2));
   document.body.classList.toggle('svs-round', !!s.rounded);
   const f = document.getElementById('svs_fab'); if (f) f.style.opacity = String(Math.max(0.5, s.opacity));
@@ -1280,7 +1334,7 @@ function buildUI() {
             addMission(cs, { title, desc: '', reward: document.getElementById('svs_mr')?.value || 50 }); saveChat(); render(); break;
           }
           case 'm-done': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m && m.status === 'active') { completeMission(m); setUndo(m, 'done'); saveChat(); render(); } break; }
-          case 'm-drop': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m && m.status === 'active') { m.status = 'failed'; setUndo(m, 'failed'); saveChat(); render(); } break; }
+          case 'm-drop': { const m = cs.missions.find((x) => x.id === el.dataset.id); if (m && m.status === 'active') { failMission(m); setUndo(m, 'failed'); saveChat(); render(); } break; }
           case 'm-undo': undoMission(el.dataset.id); break;
           case 'buy': {
             const it = parseShop(w.shopText)[Number(el.dataset.i)]; if (!it) break;
@@ -1356,7 +1410,9 @@ function buildUI() {
       svs_fabchk: (el) => { S().showFab = el.checked; },
       svs_toast: (el) => { S().toasts = el.checked; },
       svs_round: (el) => { S().rounded = el.checked; },
+      svs_pattern: (el) => { S().pattern = el.checked; },
       svs_risk: (el) => { S().deathRisk = el.checked; },
+      svs_punish: (el) => { S().punishQuests = el.checked; },
       svs_chatson: (el) => { const m = META(); if (!m) { window.toastr?.warning(t('no_chat')); return; } m.off = !el.checked; saveChat(); },
       svs_newoff: (el) => { S().newChatsOff = el.checked; },
       svs_avmode: (el) => { S().avatarMode = el.value; },

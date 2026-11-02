@@ -10,12 +10,14 @@ Works with any fandom and any character, on desktop and mobile.
 
 - **Points, missions and shop** — in-character acts earn points, OOC acts cost points. Missions, a shop with an inventory, and an "Ask the System" box for private hints.
 - **Optional death / expulsion risk** — the System warns you from the start; if your points drop to zero or below, it erases you and locks the profile until you restart it. Can be switched on or off in settings.
+- **Optional punishment quests** — instead of death, the System answers clear out-of-character acts and a zero balance with special penalty quests. Completing one restores points; declining it costs half of its reward. Can be switched on or off in settings.
+- **Undo** for accidentally completed or abandoned quests.
 - **World profiles for any fandom** — bind yourself to a **canon character**, or be inserted as an **original character** with your own story and entry point in the canon timeline.
 - **Fill a profile automatically** from the model's own knowledge of the fandom, from Fandom wiki page links, from a lorebook, or from your own description. Or write everything by hand.
 - **Save, switch, import and export profiles** — each profile keeps its own points, missions and items inside every chat.
 - **In-chat popup** — a collapsible System window drawn in the chat, at the top, middle or bottom of a message. It is display-only.
 - **On/off per chat**, plus an optional "new chats start switched off".
-- **Look and feel** — holographic HUD style, opacity and background blur sliders, optional rounded corners, resizable draggable floating button, avatar from your persona, the chat character or your own image.
+- **Look and feel** — holographic HUD style, opacity and background blur sliders, optional rounded corners, a softened (or hidden) decorative pattern, resizable draggable floating button, avatar from your persona, the chat character or your own image.
 - **Connection profile chooser** (uses SillyTavern's Connection Manager) with a reload button, so the System can use a different model from your main chat.
 - **English and Russian** interface; the System can speak a different language than the interface or match the chat.
 - **Diagnostics** button that checks the extension and the model connection and produces a report you can copy.
