@@ -155,7 +155,7 @@ function t(k, v) {
 }
 
 /* ------------------------------------------------------------ debug store */
-const VERSION = '1.6.1';
+const VERSION = '1.6.2';
 const dbg = { events: {}, errors: [], lastSkip: '', lastRaw: '', lastRawAt: 0, listeners: false, buildSteps: [] };
 function logErr(where, e) {
   const msg = (e && (e.stack || e.message)) || String(e);
@@ -1182,13 +1182,13 @@ function render() {
 
 function renderDrawer() {
   const s = S();
-  $('#svs_drawer_body').html(`
+  $('#svs_drawer_body').html(`<div class="svs-drawer-inner">
     <label class="checkbox_label"><input type="checkbox" id="svs_d_en" ${s.enabled ? 'checked' : ''}><span>${t('s_enabled')}</span></label>
     <label>${t('s_lang')} <select id="svs_d_lang" class="text_pole"><option value="en" ${s.lang === 'en' ? 'selected' : ''}>English</option><option value="ru" ${s.lang === 'ru' ? 'selected' : ''}>Русский</option></select></label>
     <div class="flex-container">
       <div id="svs_d_open" class="menu_button menu_button_icon"><i class="fa-solid fa-terminal"></i><span>${t('open_btn')}</span></div>
       <div id="svs_d_diag" class="menu_button menu_button_icon"><i class="fa-solid fa-stethoscope"></i><span>${t('diag')}</span></div>
-    </div>`);
+    </div></div>`);
   $('#svs_wand_label').text(t('title'));
   const g = (id) => document.getElementById(id);
   if (g('svs_d_en')) g('svs_d_en').onchange = (e) => { S().enabled = e.target.checked; render(); save(); };

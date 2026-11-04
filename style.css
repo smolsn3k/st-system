@@ -240,7 +240,8 @@
 .svs-dg pre { margin: 2px 0 0; padding: 0; background: none; border: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.4 ui-monospace, "SF Mono", Consolas, monospace; color: var(--dim); }
 .svs-dg.ok > i { color: var(--cy); } .svs-dg.warn > i { color: var(--amber); } .svs-dg.fail > i { color: var(--red); }
 .svs-dg.fail { border-color: rgba(255, 107, 138, 0.45); background: rgba(255, 107, 138, 0.06); }
-#svs_drawer_body { display: flex; flex-direction: column; gap: 10px; }
+/* layout lives on an inner wrapper: the drawer container itself must keep SillyTavern's collapsed-by-default rule */
+.svs-drawer-inner { display: flex; flex-direction: column; gap: 10px; }
 
 /* ═════════ in-chat popup ═════════ */
 .svs-chatpop {
